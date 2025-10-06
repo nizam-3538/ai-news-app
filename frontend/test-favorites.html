@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Favorites Test</title>
+</head>
+<body>
+    <h1>Testing Favorites Functionality</h1>
+    <button id="addSampleFavorites">Add Sample Favorites</button>
+    <button id="showFavorites">Show Favorites Count</button>
+    <button id="clearFavorites">Clear All Favorites</button>
+    
+    <div id="output"></div>
+    
+    <script src="favorites.js"></script>
+    <script>
+        const output = document.getElementById('output');
+        
+        document.getElementById('addSampleFavorites').addEventListener('click', () => {
+            // Add sample articles to favorites
+            const sampleArticles = [
+                {
+                    id: 'test1',
+                    title: 'Test Article 1',
+                    link: 'https://example.com/1',
+                    summary: 'This is a test article summary 1',
+                    source: 'Test Source',
+                    author: 'Test Author',
+                    publishedAt: new Date().toISOString(),
+                    categories: ['tech', 'news'],
+                    sentiment: 'positive'
+                },
+                {
+                    id: 'test2',
+                    title: 'Test Article 2',
+                    link: 'https://example.com/2',
+                    summary: 'This is a test article summary 2',
+                    source: 'Another Source',
+                    author: 'Another Author',
+                    publishedAt: new Date().toISOString(),
+                    categories: ['business'],
+                    sentiment: 'neutral'
+                }
+            ];
+            
+            sampleArticles.forEach(article => {
+                Favorites.addFavorite(article);
+            });
+            
+            output.innerHTML = `<p>Added ${sampleArticles.length} sample favorites!</p>`;
+        });
+        
+        document.getElementById('showFavorites').addEventListener('click', () => {
+            const favorites = Favorites.getFavorites();
+            output.innerHTML = `<p>Favorites count: ${favorites.length}</p><pre>${JSON.stringify(favorites, null, 2)}</pre>`;
+        });
+        
+        document.getElementById('clearFavorites').addEventListener('click', () => {
+            Favorites.clearFavorites();
+            output.innerHTML = '<p>All favorites cleared!</p>';
+        });
+    </script>
+</body>
+</html>

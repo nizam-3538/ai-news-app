@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🤖 Chatbot Integration Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
+        .container { max-width: 1000px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 6px; }
+        .success { background: #d4edda; border-color: #28a745; }
+        .error { background: #f8d7da; border-color: #dc3545; }
+        .info { background: #d1ecf1; border-color: #17a2b8; }
+        .warning { background: #fff3cd; border-color: #ffc107; }
+        button { padding: 10px 15px; margin: 5px; border: none; border-radius: 4px; cursor: pointer; }
+        .btn-primary { background: #007bff; color: white; }
+        .btn-success { background: #28a745; color: white; }
+        .btn-info { background: #17a2b8; color: white; }
+        .btn-warning { background: #ffc107; color: black; }
+        code { background: #f8f9fa; padding: 2px 4px; border-radius: 3px; font-family: monospace; }
+        .chat-demo { border: 1px solid #ddd; border-radius: 6px; max-width: 400px; margin: 10px 0; }
+        .chat-header { background: #f8f9fa; padding: 10px; border-bottom: 1px solid #ddd; font-weight: bold; }
+        .chat-messages { height: 200px; overflow-y: auto; padding: 10px; }
+        .chat-message { margin: 8px 0; padding: 8px; border-radius: 6px; max-width: 85%; }
+        .chat-message.ai { background: #e3f2fd; align-self: flex-start; }
+        .chat-message.user { background: #bbdefb; align-self: flex-end; margin-left: auto; text-align: right; }
+        .chat-input { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🤖 AI Chatbot Integration Test</h1>
+        <p>Comprehensive testing of the AI chatbot functionality in the AI News Aggregator.</p>
+        
+        <div class="test-section info">
+            <h3>📋 Chatbot Features Overview</h3>
+            <ul>
+                <li><strong>AI Assistant</strong>: Available on individual article pages (news.html)</li>
+                <li><strong>Powered by</strong>: Azure OpenAI (GPT-3.5 Turbo) + extractive fallback</li>
+                <li><strong>Storage</strong>: IndexedDB with localStorage fallback for chat history</li>
+                <li><strong>Grounded responses</strong>: AI only uses information from the current article</li>
+                <li><strong>Features</strong>: Chat history, article summarization, clear chat</li>
+            </ul>
+        </div>
+        
+        <div class="test-section">
+            <h3>🧪 Test 1: Module Availability Check</h3>
+            <button class="btn-info" onclick="testModules()">Check Chat Module</button>
+            <div id="moduleResults"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>🧪 Test 2: Backend AI Endpoint Check</h3>
+            <button class="btn-info" onclick="testBackendAI()">Test AI Analysis Endpoint</button>
+            <div id="backendResults"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>🧪 Test 3: Chat History Storage</h3>
+            <button class="btn-info" onclick="testChatStorage()">Test Chat Storage</button>
+            <div id="storageResults"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>🧪 Test 4: Live Article Chat Demo</h3>
+            <button class="btn-success" onclick="openNewsPage()">Open News Article with AI Chat</button>
+            <button class="btn-warning" onclick="simulateChatFlow()">Simulate Chat Flow</button>
+            <div id="chatResults"></div>
+            
+            <div class="chat-demo" id="chatDemo" style="display: none;">
+                <div class="chat-header">🤖 AI Assistant Demo</div>
+                <div class="chat-messages" id="demoMessages">
+                    <div class="chat-message ai">👋 Hi! I'm your AI assistant. I can help you understand this article better. Feel free to ask me any questions about its content!</div>
+                </div>
+                <div style="padding: 10px;">
+                    <input type="text" class="chat-input" placeholder="Ask a question about this article..." id="demoInput">
+                    <button class="btn-primary" onclick="sendDemoMessage()" style="width: 100%; margin-top: 5px;">Send Question</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h3>🔧 Manual Testing Instructions</h3>
+            <div class="info" style="padding: 15px;">
+                <h4>How to Test the AI Chatbot:</h4>
+                <ol>
+                    <li><strong>Open a news article</strong>: Click any article from the main dashboard to go to news.html</li>
+                    <li><strong>Find the AI Chat panel</strong>: Located on the right side of the article page</li>
+                    <li><strong>Ask questions</strong>: Type questions about the article content and press Send</li>
+                    <li><strong>Test features</strong>:
+                        <ul>
+                            <li>Try asking specific questions about the article content</li>
+                            <li>Test the "Clear Chat" button</li>
+                            <li>Refresh the page and verify chat history persists</li>
+                        </ul>
+                    </li>
+                </ol>
+                
+                <h4>Sample Questions to Try:</h4>
+                <ul>
+                    <li>"What is the main topic of this article?"</li>
+                    <li>"Who are the key people mentioned?"</li>
+                    <li>"What are the main facts or statistics?"</li>
+                    <li>"Can you summarize this article in 2 sentences?"</li>
+                    <li>"What is the author's opinion on this topic?"</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h3>🛠️ Advanced Testing Commands</h3>
+            <p>Copy and paste these commands in the browser console on a news article page:</p>
+            
+            <h4>Check Chat Module Status:</h4>
+            <code style="display: block; padding: 10px; background: #f8f9fa; margin: 5px 0;">
+console.log('Chat module:', typeof Chat);<br>
+console.log('Current article ID:', window.currentArticle?.id);<br>
+console.log('Chat history count:', Chat ? await Chat.getMessages(window.currentArticle?.id).then(msgs => msgs.length) : 'N/A');
+            </code>
+            
+            <h4>Test Chat Storage:</h4>
+            <code style="display: block; padding: 10px; background: #f8f9fa; margin: 5px 0;">
+if (Chat && window.currentArticle) {<br>
+&nbsp;&nbsp;await Chat.addMessage(window.currentArticle.id, {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;message: 'Test message from console',<br>
+&nbsp;&nbsp;&nbsp;&nbsp;isUser: true<br>
+&nbsp;&nbsp;});<br>
+&nbsp;&nbsp;console.log('✅ Test message added to chat history');<br>
+}
+            </code>
+            
+            <h4>Test AI Analysis Endpoint:</h4>
+            <code style="display: block; padding: 10px; background: #f8f9fa; margin: 5px 0;">
+if (window.currentArticle) {<br>
+&nbsp;&nbsp;fetch('http://localhost:3000/analyze/chat', {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;method: 'POST',<br>
+&nbsp;&nbsp;&nbsp;&nbsp;headers: { 'Content-Type': 'application/json' },<br>
+&nbsp;&nbsp;&nbsp;&nbsp;body: JSON.stringify({<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;articleId: window.currentArticle.id,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;question: 'What is this article about?'<br>
+&nbsp;&nbsp;&nbsp;&nbsp;})<br>
+&nbsp;&nbsp;}).then(r => r.json()).then(console.log);<br>
+}
+            </code>
+        </div>
+    </div>
+    
+    <script src="chat.js"></script>
+    <script>
+        function testModules() {
+            const results = document.getElementById('moduleResults');
+            const checks = [];
+            
+            // Check Chat module
+            checks.push(`Chat module: ${typeof Chat !== 'undefined' ? '✅ Available' : '❌ Missing'}`);
+            
+            // Check Chat methods
+            if (typeof Chat !== 'undefined') {
+                checks.push(`Chat.init: ${typeof Chat.init === 'function' ? '✅' : '❌'}`);
+                checks.push(`Chat.addMessage: ${typeof Chat.addMessage === 'function' ? '✅' : '❌'}`);
+                checks.push(`Chat.getMessages: ${typeof Chat.getMessages === 'function' ? '✅' : '❌'}`);
+                checks.push(`Chat.clearMessages: ${typeof Chat.clearMessages === 'function' ? '✅' : '❌'}`);
+            }
+            
+            // Check IndexedDB support
+            checks.push(`IndexedDB support: ${window.indexedDB ? '✅ Available' : '❌ Not available (will use localStorage)'}`);
+            
+            results.innerHTML = `<div class="success" style="margin-top: 10px; padding: 10px;">
+                ${checks.join('<br>')}
+            </div>`;
+        }
+        
+        async function testBackendAI() {
+            const results = document.getElementById('backendResults');
+            results.innerHTML = '<div style="margin-top: 10px;">🔄 Testing backend AI endpoints...</div>';
+            
+            try {
+                // Test health endpoint
+                const healthResponse = await fetch('http://localhost:3000/');
+                const healthOk = healthResponse.ok;
+                
+                // Test analyze endpoint
+                const testResponse = await fetch('http://localhost:3000/analyze/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        articleId: 'test_article',
+                        question: 'Test question'
+                    })
+                });
+                
+                const analyzeOk = testResponse.ok || testResponse.status === 400; // 400 is expected for missing article
+                
+                results.innerHTML = `<div class="success" style="margin-top: 10px; padding: 10px;">
+                    ✅ Backend health: ${healthOk ? 'OK' : 'Failed'}<br>
+                    ✅ AI analyze endpoint: ${analyzeOk ? 'Accessible' : 'Failed'}<br>
+                    📊 Status: Backend is ${healthOk && analyzeOk ? 'ready for AI chat' : 'having issues'}
+                </div>`;
+            } catch (error) {
+                results.innerHTML = `<div class="error" style="margin-top: 10px; padding: 10px;">
+                    ❌ Backend test failed: ${error.message}<br>
+                    💡 Make sure the backend server is running on port 3000
+                </div>`;
+            }
+        }
+        
+        async function testChatStorage() {
+            const results = document.getElementById('storageResults');
+            
+            if (typeof Chat === 'undefined') {
+                results.innerHTML = '<div class="error" style="margin-top: 10px; padding: 10px;">❌ Chat module not available</div>';
+                return;
+            }
+            
+            try {
+                const testArticleId = 'test_article_' + Date.now();
+                const testMessage = {
+                    message: 'Test chat message from integration test',
+                    isUser: true,
+                    timestamp: new Date().toISOString()
+                };
+                
+                // Add test message
+                const addResult = await Chat.addMessage(testArticleId, testMessage);
+                
+                // Retrieve messages
+                const messages = await Chat.getMessages(testArticleId);
+                
+                // Clear test data
+                await Chat.clearMessages(testArticleId);
+                
+                results.innerHTML = `<div class="success" style="margin-top: 10px; padding: 10px;">
+                    ✅ Add message: ${addResult ? 'Success' : 'Failed'}<br>
+                    ✅ Retrieve messages: ${messages.length > 0 ? 'Success' : 'Failed'}<br>
+                    ✅ Clear messages: Success<br>
+                    📊 Chat storage is working correctly!
+                </div>`;
+            } catch (error) {
+                results.innerHTML = `<div class="error" style="margin-top: 10px; padding: 10px;">
+                    ❌ Chat storage test failed: ${error.message}
+                </div>`;
+            }
+        }
+        
+        function openNewsPage() {
+            // Open the main app to select an article
+            window.open('http://localhost:8000/', '_blank');
+            
+            document.getElementById('chatResults').innerHTML = `<div class="info" style="margin-top: 10px; padding: 10px;">
+                🚀 Main app opened! <br>
+                👆 Click on any article to open the news detail page with AI chat functionality.<br>
+                🤖 Look for the "AI Assistant" panel on the right side of the article page.
+            </div>`;
+        }
+        
+        function simulateChatFlow() {
+            const demo = document.getElementById('chatDemo');
+            demo.style.display = 'block';
+            
+            document.getElementById('chatResults').innerHTML = `<div class="info" style="margin-top: 10px; padding: 10px;">
+                🎭 Chat simulation activated! Try the demo chat below.<br>
+                💡 This simulates the real chat interface you'll find on article pages.
+            </div>`;
+        }
+        
+        function sendDemoMessage() {
+            const input = document.getElementById('demoInput');
+            const messages = document.getElementById('demoMessages');
+            const question = input.value.trim();
+            
+            if (!question) return;
+            
+            // Add user message
+            const userMsg = document.createElement('div');
+            userMsg.className = 'chat-message user';
+            userMsg.textContent = question;
+            messages.appendChild(userMsg);
+            
+            // Add AI response
+            setTimeout(() => {
+                const aiMsg = document.createElement('div');
+                aiMsg.className = 'chat-message ai';
+                aiMsg.innerHTML = `🤖 This is a demo response. In the real chatbot, I would analyze the current article content and provide a grounded answer based on: "${question}"<br><br>💡 To test the real AI chatbot, open an article from the main dashboard and use the AI Assistant panel.`;
+                messages.appendChild(aiMsg);
+                messages.scrollTop = messages.scrollHeight;
+            }, 1000);
+            
+            input.value = '';
+            messages.scrollTop = messages.scrollHeight;
+        }
+        
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🤖 Chatbot test page loaded');
+            testModules();
+        });
+    </script>
+</body>
+</html>

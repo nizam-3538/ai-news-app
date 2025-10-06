@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Frontend-Backend Test</title>
+</head>
+<body>
+    <h1>Frontend-Backend Connection Test</h1>
+    <div id="result">Testing connection...</div>
+
+    <script>
+        async function testConnection() {
+            const resultDiv = document.getElementById('result');
+            
+            try {
+                const response = await fetch('http://localhost:3001/news');
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                
+                if (!data.ok) {
+                    throw new Error(data.error || 'Failed to load news');
+                }
+                
+                resultDiv.innerHTML = `
+                    <h2 style="color: green;">✅ Success!</h2>
+                    <p>Successfully connected to backend.</p>
+                    <p>Loaded ${data.articles.length} articles.</p>
+                    <p>First article: ${data.articles[0].title}</p>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <h2 style="color: red;">❌ Error</h2>
+                    <p>Failed to connect to backend:</p>
+                    <p>${error.message}</p>
+                `;
+            }
+        }
+        
+        // Run the test
+        testConnection();
+    </script>
+</body>
+</html>

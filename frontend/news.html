@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Read full article with AI analysis">
+    <title>Article - AI News Aggregator</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Header Navigation -->
+    <header class="navbar navbar-expand-lg" role="banner">
+        <div class="container-fluid">
+            <a class="navbar-brand d-flex align-items-center" href="index.html">
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.94-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+                </svg>
+                <span class="ms-2">AI News Aggregator</span>
+            </a>
+            <div class="header-actions">
+                <a href="index.html" class="btn btn-secondary">← Back to News</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container-fluid mt-4">
+        <div class="row">
+            <!-- Article Content -->
+            <div class="col-lg-8">
+                <div id="article-content" class="card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-center">
+                            <div class="spinner-border" role="status">
+                                <span class="visually-hidden">Loading article...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Error State -->
+                <div id="errorState" class="card d-none">
+                    <div class="card-body text-center">
+                        <div style="font-size: 4rem; margin-bottom: 1rem;">⚠️</div>
+                        <h2>Article not found</h2>
+                        <p class="text-muted" id="errorMessage">This article may have been removed or the link is invalid.</p>
+                        <a href="index.html" class="btn btn-primary mt-3">Back to Home</a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Chatbot Sidebar -->
+            <div class="col-lg-4">
+                <div class="card h-100">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">
+                            <i class="bi bi-chat-dots me-2"></i>
+                            AI News Assistant
+                        </h5>
+                    </div>
+                    <div class="card-body d-flex flex-column" style="height: 600px;">
+                        <!-- Chat Messages -->
+                        <div id="chatMessages" class="flex-grow-1 overflow-auto mb-3 border rounded p-3" style="background-color: #f8f9fa;">
+                            <div class="chat-message bot-message mb-2">
+                                <div class="d-flex">
+                                    <div class="badge bg-primary rounded-pill me-2">AI</div>
+                                    <div class="flex-grow-1">
+                                        <small class="text-muted">Just now</small>
+                                        <p class="mb-0">Hi! I'm your AI news assistant. I can help you understand this article, answer questions about the content, or discuss related topics. Try asking me:</p>
+                                        <ul class="mb-0 mt-2">
+                                            <li>"What is this article about?"</li>
+                                            <li>"Can you summarize the key points?"</li>
+                                            <li>"Why is this news significant?"</li>
+                                            <li>"Who was involved in this story?"</li>
+                                        </ul>
+                                        <p class="mb-0 mt-2">What would you like to know?</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Chat Input -->
+                        <div class="input-group">
+                            <input type="text" id="chatInput" class="form-control" placeholder="Ask me about this article..." maxlength="500">
+                            <button class="btn btn-primary" type="button" id="sendChatBtn">
+                                <i class="bi bi-send"></i>
+                            </button>
+                        </div>
+                        
+                        <!-- AI Disclaimer -->
+                        <div class="mt-2 mb-2">
+                            <small class="text-muted d-flex align-items-center">
+                                <i class="bi bi-exclamation-triangle me-1" style="color: #ffc107;"></i>
+                                <strong>Note:</strong>&nbsp;AI can make mistakes. Please verify important information from reliable sources.
+                            </small>
+                        </div>
+                        
+                        <!-- Quick Questions -->
+                        <div class="mt-2">
+                            <small class="text-muted">Quick questions:</small>
+                            <div class="d-flex flex-wrap gap-1 mt-1">
+                                <button class="btn btn-outline-secondary btn-sm quick-question" data-question="Summarize this article">Summary</button>
+                                <button class="btn btn-outline-secondary btn-sm quick-question" data-question="What are the key points?">Key Points</button>
+                                <button class="btn btn-outline-secondary btn-sm quick-question" data-question="What's the significance of this news?">Significance</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Global variables
+        let currentArticle = null;
+        let chatHistory = [];
+
+        // This script runs on news.html - its job is to get the ID from URL and display the article
+        
+        function getArticleId() {
+            // First try hash fragment (new method)
+            const hash = window.location.hash;
+            if (hash && hash.startsWith('#')) {
+                console.log('Found article index in hash:', hash.substring(1));
+                return hash.substring(1);
+            }
+            
+            // Fallback to URL parameters (old method)
+            const urlParams = new URLSearchParams(window.location.search);
+            const id = urlParams.get('id');
+            console.log('Raw URL:', window.location.href);
+            console.log('Search string:', window.location.search);
+            console.log('Parsed ID:', id);
+            return id;
+        }
+
+        function showError(message) {
+            document.getElementById('article-content').classList.add('d-none');
+            const errorState = document.getElementById('errorState');
+            errorState.classList.remove('d-none');
+            document.getElementById('errorMessage').textContent = message;
+        }
+
+        // Chatbot Functions
+        function addChatMessage(message, isUser = false) {
+            const chatMessages = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `chat-message ${isUser ? 'user-message' : 'bot-message'} mb-2`;
+            
+            const timestamp = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            
+            messageDiv.innerHTML = `
+                <div class="d-flex ${isUser ? 'justify-content-end' : ''}">
+                    ${!isUser ? '<div class="badge bg-primary rounded-pill me-2">AI</div>' : ''}
+                    <div class="flex-grow-1 ${isUser ? 'text-end' : ''}">
+                        <small class="text-muted">${timestamp}</small>
+                        <div class="p-2 rounded ${isUser ? 'bg-light ms-5' : 'bg-white'}">
+                            <p class="mb-0">${message}</p>
+                        </div>
+                    </div>
+                    ${isUser ? '<div class="badge bg-secondary rounded-pill ms-2">You</div>' : ''}
+                </div>
+            `;
+            
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        async function sendAIMessage(userMessage) {
+            if (!currentArticle) {
+                addChatMessage("I need an article to be loaded first before I can help you analyze it.", false);
+                return;
+            }
+            
+            // Show typing indicator
+            const typingDiv = document.createElement('div');
+            typingDiv.id = 'typing-indicator';
+            typingDiv.className = 'chat-message bot-message mb-2';
+            typingDiv.innerHTML = `
+                <div class="d-flex">
+                    <div class="badge bg-primary rounded-pill me-2">AI</div>
+                    <div class="flex-grow-1">
+                        <div class="p-2 rounded bg-white">
+                            <div class="typing-dots">
+                                <span></span><span></span><span></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            const chatMessages = document.getElementById('chatMessages');
+            chatMessages.appendChild(typingDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            
+            try {
+                // Call the real AI API
+                const response = await fetch('http://localhost:3000/analyze', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        text: `Title: ${currentArticle.title}
+
+Summary: ${currentArticle.summary}
+
+Content: ${currentArticle.content}`,
+                        question: userMessage
+                    })
+                });
+                
+                const data = await response.json();
+                
+                // Remove typing indicator
+                document.getElementById('typing-indicator')?.remove();
+                
+                if (data.ok && data.answer) {
+                    addChatMessage(data.answer, false);
+                } else {
+                    addChatMessage("I'm sorry, I couldn't process that question right now. Please try asking something else.", false);
+                }
+                
+            } catch (error) {
+                console.error('AI API Error:', error);
+                document.getElementById('typing-indicator')?.remove();
+                addChatMessage("I'm experiencing some technical difficulties. Please try again in a moment.", false);
+            }
+        }
+        
+        function handleGreeting(message) {
+            const greetingResponses = [
+                "Hello! I'm your AI news assistant. I'm here to help you understand this article better. What would you like to know?",
+                "Hi there! I can analyze this article, answer your questions, or explain its significance. How can I help?",
+                "Hey! I'm ready to dive into this news story with you. Ask me anything about the article!",
+                "Hello! I can help you explore this article's key points, background, or implications. What interests you most?",
+                "Hi! I'm your conversation partner for this news article. Feel free to ask me questions or share your thoughts!"
+            ];
+            
+            // Add some conversation starters
+            const starters = [
+                "\n\nYou could ask me:",
+                "• What's the main story here?",
+                "• Why is this news important?", 
+                "• Who are the key people involved?",
+                "• What are the implications?"
+            ];
+            
+            const randomResponse = greetingResponses[Math.floor(Math.random() * greetingResponses.length)];
+            const fullResponse = randomResponse + starters.join("\n");
+            
+            setTimeout(() => {
+                addChatMessage(fullResponse, false);
+            }, 500);
+        }
+        
+        function isGreeting(text) {
+            if (!text || typeof text !== 'string') return false;
+            const t = text.trim().toLowerCase();
+            
+            // Simple greetings
+            if (/^(hi|hello|hey|hiya|yo|howdy)(\s|[.,!?]|$)/i.test(t)) return true;
+            
+            // Time-based greetings
+            if (/\b(good morning|good afternoon|good evening|good night)\b/i.test(t)) return true;
+            
+            // Other common greetings
+            if (/^(greetings|salutations|what's up|whats up|sup)(\s|[.,!?]|$)/i.test(t)) return true;
+            
+            return false;
+        }
+
+        function sendChatMessage() {
+            const chatInput = document.getElementById('chatInput');
+            const message = chatInput.value.trim();
+            
+            if (message) {
+                addChatMessage(message, true);
+                chatInput.value = '';
+                
+                // Check if it's a greeting
+                if (isGreeting(message)) {
+                    handleGreeting(message);
+                } else {
+                    // Send to AI for analysis
+                    sendAIMessage(message);
+                }
+            }
+        }
+
+        async function loadArticleFromBackend(articleIndex) {
+            try {
+                const response = await fetch(`http://localhost:3000/news/${articleIndex}`);
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                const data = await response.json();
+                if (!data.success) {
+                    throw new Error(data.error || 'Failed to load article');
+                }
+                return data.data;
+            } catch (error) {
+                console.error('Error loading article:', error);
+                throw error;
+            }
+        }
+
+        function displayArticle(article) {
+            currentArticle = article; // Store for chatbot
+            const contentDiv = document.getElementById('article-content');
+            
+            // Determine if content should be initially truncated
+            const shouldTruncate = article.content && article.content.length > 500;
+            const displayContent = shouldTruncate ? 
+                article.content.substring(0, 500) + '...' : 
+                (article.content || 'Full content not available. Click the link below to read the original article.');
+            
+            // Get article image from various possible sources
+            let articleImage = null;
+            if (article.originalItem) {
+                articleImage = article.originalItem.urlToImage || 
+                              article.originalItem.image || 
+                              article.originalItem.image_url;
+            }
+            
+            contentDiv.innerHTML = `
+                <div class="card-header">
+                    <h1 class="card-title mb-0">${article.title}</h1>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <small class="text-muted">
+                                <i class="bi bi-building me-1"></i>
+                                <strong>Source:</strong> ${article.source}
+                            </small>
+                        </div>
+                        <div class="col-md-6">
+                            <small class="text-muted">
+                                <i class="bi bi-person me-1"></i>
+                                <strong>Author:</strong> ${article.author}
+                            </small>
+                        </div>
+                    </div>
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <small class="text-muted">
+                                <i class="bi bi-calendar me-1"></i>
+                                <strong>Published:</strong> ${new Date(article.publishedAt).toLocaleDateString('en-US', { 
+                                    year: 'numeric', 
+                                    month: 'long', 
+                                    day: 'numeric',
+                                    hour: '2-digit',
+                                    minute: '2-digit'
+                                })}
+                            </small>
+                        </div>
+                    </div>
+                    
+                    ${articleImage ? `
+                        <div class="mb-4">
+                            <div class="text-center">
+                                <img src="${articleImage}" 
+                                     alt="Article image" 
+                                     class="img-fluid rounded shadow" 
+                                     style="max-height: 400px; width: auto; object-fit: cover;"
+                                     onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                                <div class="alert alert-light text-muted" style="display: none;">
+                                    <i class="bi bi-image me-1"></i>
+                                    Image could not be loaded
+                                </div>
+                            </div>
+                        </div>
+                    ` : ''}
+                    
+                    <div class="alert alert-info" role="alert">
+                        <h5 class="alert-heading">
+                            <i class="bi bi-info-circle me-2"></i>
+                            Summary
+                        </h5>
+                        <p class="mb-0">${article.summary}</p>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <h5>
+                            <i class="bi bi-file-text me-2"></i>
+                            Content
+                        </h5>
+                        <div class="content-container">
+                            <div class="content-text" id="articleContent">${displayContent}</div>
+                            ${shouldTruncate ? `
+                                <div class="text-center mt-3">
+                                    <button class="btn btn-outline-primary btn-sm" id="toggleContent">
+                                        <i class="bi bi-chevron-down me-1"></i>
+                                        Show Full Content
+                                    </button>
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <div class="d-flex gap-2">
+                        <a href="${article.link}" target="_blank" class="btn btn-primary">
+                            <i class="bi bi-box-arrow-up-right me-1"></i>
+                            Read Original Article
+                        </a>
+                        <a href="index.html" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left me-1"></i>
+                            Back to News
+                        </a>
+                    </div>
+                </div>
+            `;
+            
+            // Add toggle functionality if content was truncated
+            if (shouldTruncate) {
+                const toggleBtn = document.getElementById('toggleContent');
+                const contentDiv = document.getElementById('articleContent');
+                let isExpanded = false;
+                
+                toggleBtn.addEventListener('click', function() {
+                    if (isExpanded) {
+                        contentDiv.innerHTML = article.content.substring(0, 500) + '...';
+                        toggleBtn.innerHTML = '<i class="bi bi-chevron-down me-1"></i>Show Full Content';
+                        isExpanded = false;
+                    } else {
+                        contentDiv.innerHTML = article.content;
+                        toggleBtn.innerHTML = '<i class="bi bi-chevron-up me-1"></i>Show Less';
+                        isExpanded = true;
+                    }
+                });
+            }
+        }
+
+        // Main execution when page loads
+        document.addEventListener('DOMContentLoaded', async () => {
+            // GET the index from the URL now that we are on the new page
+            const articleIndex = getArticleId();
+            
+            if (articleIndex !== null && articleIndex !== undefined) {
+                // SUCCESS! We have the index.
+                
+                try {
+                    // Load article from backend using the index
+                    const article = await loadArticleFromBackend(articleIndex);
+                    displayArticle(article);
+                } catch (error) {
+                    showError(error.message || 'Failed to load article');
+                }
+            } else {
+                // The URL did not have an index
+                console.error('ERROR: No article index was found in the URL.');
+                showError('No article index provided in URL');
+            }
+
+            // Initialize chatbot event listeners
+            document.getElementById('sendChatBtn').addEventListener('click', sendChatMessage);
+            
+            document.getElementById('chatInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    sendChatMessage();
+                }
+            });
+
+            // Quick question buttons
+            document.querySelectorAll('.quick-question').forEach(button => {
+                button.addEventListener('click', function() {
+                    const question = this.getAttribute('data-question');
+                    document.getElementById('chatInput').value = question;
+                    sendChatMessage();
+                });
+            });
+        });
+    </script>
+
+    <style>
+        .typing-dots {
+            display: inline-block;
+        }
+        
+        .typing-dots span {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: #007bff;
+            margin: 0 2px;
+            animation: typing 1.4s infinite ease-in-out;
+        }
+        
+        .typing-dots span:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dots span:nth-child(2) { animation-delay: -0.16s; }
+        
+        @keyframes typing {
+            0%, 80%, 100% { transform: scale(0.8); opacity: 0.5; }
+            40% { transform: scale(1); opacity: 1; }
+        }
+        
+        .chat-message {
+            animation: fadeIn 0.3s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        #chatMessages {
+            max-height: 550px;
+        }
+        
+        .quick-question:hover {
+            transform: translateY(-1px);
+            transition: transform 0.2s ease;
+        }
+        
+        .content-container {
+            max-width: 100%;
+        }
+        
+        .content-text {
+            line-height: 1.7;
+            font-size: 1.1rem;
+            text-align: justify;
+            word-wrap: break-word;
+            white-space: pre-wrap;
+        }
+        
+        .content-text p {
+            margin-bottom: 1rem;
+        }
+        
+        #toggleContent {
+            transition: all 0.3s ease;
+        }
+        
+        #toggleContent:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+    </style>
+</body>
+</html>

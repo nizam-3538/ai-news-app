@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Complete Favorites Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        button { margin: 10px; padding: 10px 20px; font-size: 16px; }
+        .result { margin: 10px 0; padding: 10px; border: 1px solid #ccc; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        .info { background-color: #d1ecf1; border-color: #bee5eb; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Complete Favorites Toggle Test</h1>
+    
+    <div>
+        <h2>Step 1: Add Sample Favorites</h2>
+        <button id="addSampleFavorites">Add Sample Favorites</button>
+        <button id="checkFavorites">Check Current Favorites</button>
+        <button id="clearFavorites">Clear All Favorites</button>
+    </div>
+    
+    <div>
+        <h2>Step 2: Test Main App Favorites Toggle</h2>
+        <button id="openMainApp">Open Main App</button>
+        <button id="simulateToggle">Simulate Favorites Toggle Click</button>
+    </div>
+    
+    <div>
+        <h2>Step 3: Check DOM Elements</h2>
+        <button id="checkElements">Check DOM Elements</button>
+    </div>
+    
+    <div id="results"></div>
+    
+    <script src="favorites.js"></script>
+    <script>
+        const results = document.getElementById('results');
+        
+        function addResult(message, type = 'info') {
+            const div = document.createElement('div');
+            div.className = `result ${type}`;
+            div.innerHTML = message;
+            results.appendChild(div);
+            div.scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        // Add Sample Favorites
+        document.getElementById('addSampleFavorites').addEventListener('click', () => {
+            const sampleArticles = [
+                {
+                    id: 'test1_' + Date.now(),
+                    title: 'Sample Article 1: Tech News',
+                    link: 'https://example.com/1',
+                    summary: 'This is a sample tech article about AI developments',
+                    source: 'Tech Source',
+                    author: 'Tech Author',
+                    publishedAt: new Date().toISOString(),
+                    categories: ['tech', 'ai'],
+                    sentiment: 'positive'
+                },
+                {
+                    id: 'test2_' + Date.now(),
+                    title: 'Sample Article 2: Business News',
+                    link: 'https://example.com/2',
+                    summary: 'This is a sample business article about market trends',
+                    source: 'Business Source',
+                    author: 'Business Author',
+                    publishedAt: new Date().toISOString(),
+                    categories: ['business', 'finance'],
+                    sentiment: 'neutral'
+                },
+                {
+                    id: 'test3_' + Date.now(),
+                    title: 'Sample Article 3: Science News',
+                    link: 'https://example.com/3',
+                    summary: 'This is a sample science article about recent discoveries',
+                    source: 'Science Source',
+                    author: 'Science Author',
+                    publishedAt: new Date().toISOString(),
+                    categories: ['science', 'research'],
+                    sentiment: 'positive'
+                }
+            ];
+            
+            let addedCount = 0;
+            sampleArticles.forEach(article => {
+                if (Favorites.addFavorite(article)) {
+                    addedCount++;
+                }
+            });
+            
+            addResult(`✅ Added ${addedCount} sample favorites! Total favorites: ${Favorites.getCount()}`, 'success');
+        });
+        
+        // Check Current Favorites
+        document.getElementById('checkFavorites').addEventListener('click', () => {
+            const favorites = Favorites.getFavorites();
+            addResult(`📊 Current favorites count: <strong>${favorites.length}</strong>`, 'info');
+            
+            if (favorites.length > 0) {
+                const titles = favorites.map(f => f.title).join('<br>• ');
+                addResult(`📰 Favorite articles:<br>• ${titles}`, 'info');
+            }
+        });
+        
+        // Clear All Favorites
+        document.getElementById('clearFavorites').addEventListener('click', () => {
+            Favorites.clearFavorites();
+            addResult(`🧹 All favorites cleared!`, 'info');
+        });
+        
+        // Open Main App
+        document.getElementById('openMainApp').addEventListener('click', () => {
+            window.open('http://localhost:8000/', '_blank');
+            addResult(`🚀 Main app opened in new tab. You can now test the favorites toggle button!`, 'info');
+        });
+        
+        // Simulate Toggle (for testing the logic)
+        document.getElementById('simulateToggle').addEventListener('click', () => {
+            // This simulates what should happen when favorites toggle is clicked
+            const favorites = Favorites.getFavorites();
+            
+            if (favorites.length === 0) {
+                addResult(`⚠️ No favorites to display. Add some favorites first!`, 'error');
+                return;
+            }
+            
+            addResult(`🔄 Simulating favorites toggle with ${favorites.length} favorites`, 'info');
+            
+            // Test createFavoriteCard functionality
+            try {
+                const testCard = Favorites.createFavoriteCard(favorites[0]);
+                addResult(`✅ createFavoriteCard() works correctly`, 'success');
+            } catch (error) {
+                addResult(`❌ createFavoriteCard() error: ${error.message}`, 'error');
+            }
+        });
+        
+        // Check DOM Elements
+        document.getElementById('checkElements').addEventListener('click', () => {
+            addResult(`🔍 Checking DOM elements that should exist in main app:`, 'info');
+            
+            // We can't check the main app elements from here, but we can provide guidance
+            const elementsToCheck = [
+                'favoritesToggle - The main favorites toggle button',
+                'newsContainer - Container for news articles',
+                'favoritesSection - Container for favorites view',
+                'favoritesList - List container for favorite articles',
+                'emptyFavorites - Empty state message'
+            ];
+            
+            const checkList = elementsToCheck.map(el => `• ${el}`).join('<br>');
+            addResult(`📋 Elements to verify in main app:<br>${checkList}`, 'info');
+            
+            addResult(`💡 To check in main app, open browser console and run:<br>
+                <code>
+                console.log('favoritesToggle:', !!document.getElementById('favoritesToggle'));<br>
+                console.log('newsContainer:', !!document.getElementById('newsContainer'));<br>
+                console.log('favoritesSection:', !!document.getElementById('favoritesSection'));<br>
+                console.log('favoritesList:', !!document.getElementById('favoritesList'));<br>
+                console.log('App object:', typeof App);
+                </code>`, 'info');
+        });
+        
+        // Auto-run initial check
+        setTimeout(() => {
+            addResult(`🏁 Ready to test! Current favorites count: ${Favorites.getCount()}`, 'info');
+        }, 100);
+    </script>
+</body>
+</html>

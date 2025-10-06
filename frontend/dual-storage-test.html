@@ -1,0 +1,60 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Dual Storage Test</title>
+</head>
+<body>
+    <h1>Testing Dual Storage Favorites</h1>
+    <button id="testAuth">Test Authentication</button>
+    <button id="testAddFavorite">Test Add Favorite</button>
+    <button id="testGetFavorites">Test Get Favorites</button>
+    <button id="testSync">Test Sync</button>
+    <div id="results"></div>
+    
+    <script src="auth.js"></script>
+    <script src="favorites.js"></script>
+    <script>
+        const results = document.getElementById('results');
+        
+        function addResult(message) {
+            const div = document.createElement('div');
+            div.innerHTML = message;
+            results.appendChild(div);
+        }
+        
+        document.getElementById('testAuth').onclick = () => {
+            const isAuth = Favorites.isAuthenticated();
+            addResult('<p><strong>Authentication Status:</strong> ' + (isAuth ? 'Authenticated' : 'Not Authenticated') + '</p>');
+        };
+        
+        document.getElementById('testAddFavorite').onclick = async () => {
+            const testArticle = {
+                id: 'frontend_test_' + Date.now(),
+                title: 'Frontend Test Article',
+                link: 'https://example.com/frontend-test',
+                summary: 'Testing dual storage from frontend',
+                source: 'Frontend Test',
+                author: 'Test Author',
+                sentiment: 'positive'
+            };
+            
+            const success = await Favorites.addFavorite(testArticle);
+            addResult('<p><strong>Add Favorite:</strong> ' + (success ? 'Success' : 'Failed') + '</p>');
+        };
+        
+        document.getElementById('testGetFavorites').onclick = () => {
+            const favorites = Favorites.getFavorites();
+            addResult('<p><strong>Local Favorites Count:</strong> ' + favorites.length + '</p>');
+        };
+        
+        document.getElementById('testSync').onclick = async () => {
+            try {
+                await Favorites.syncWithServer();
+                addResult('<p><strong>Sync:</strong> Complete</p>');
+            } catch (error) {
+                addResult('<p><strong>Sync:</strong> ' + error.message + '</p>');
+            }
+        };
+    </script>
+</body>
+</html>

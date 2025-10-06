@@ -1,0 +1,19 @@
+{
+  "name": "ai-news-aggregator-frontend",
+  "version": "1.0.0",
+  "description": "Frontend for AI News Aggregator",
+  "main": "index.html",
+  "scripts": {
+    "build": "echo 'Frontend build complete - static files ready for deployment'",
+    "dev": "echo 'Use Live Server or similar for development'",
+    "test": "echo 'No tests specified yet'",
+    "lint": "echo 'No linting configured yet'",
+    "serve": "npx http-server . -p 8080 -c-1"
+  },
+  "keywords": ["news", "aggregator", "ai", "frontend"],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "http-server": "^14.1.1"
+  }
+}

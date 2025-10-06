@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="AI News Aggregator - Your intelligent news dashboard with real-time updates and AI analysis">
+    <meta name="keywords" content="news, ai, aggregator, technology, analysis">
+    <title>AI News Aggregator - Dashboard</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%232563eb'%3E%3Cpath d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z'/%3E%3C/svg%3E">
+</head>
+<body>
+    <!-- Header Navigation -->
+    <header class="navbar navbar-expand-lg" role="banner">
+        <div class="container-fluid">
+            <!-- Logo -->
+            <a class="navbar-brand d-flex align-items-center" href="index.html">
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.94-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+                </svg>
+                <span class="ms-2">AI News Aggregator</span>
+            </a>
+
+            <!-- Search Bar -->
+            <div class="flex-grow-1 mx-3">
+                <input 
+                    type="search" 
+                    id="searchInput" 
+                    class="form-control" 
+                    placeholder="Search headlines, keywords..."
+                    aria-label="Search news articles"
+                    autocomplete="off"
+                >
+            </div>
+
+            <!-- Header Actions -->
+            <div class="d-flex align-items-center">
+                <!-- Theme Toggle -->
+                <button id="themeToggle" class="btn btn-outline-secondary me-2" aria-label="Toggle dark mode" title="Toggle theme">
+                    <span id="themeText">Dark Mode</span>
+                </button>
+
+                <!-- User Actions -->
+                <div id="authSection" class="d-flex align-items-center">
+                    <!-- Not logged in -->
+                    <div id="guestActions">
+                        <a href="login.html" class="btn btn-secondary me-2">Login</a>
+                        <a href="signup.html" class="btn btn-primary">Sign Up</a>
+                    </div>
+
+                    <!-- Logged in -->
+                    <div id="userActions" class="d-flex align-items-center hidden">
+                        <span id="userWelcome" class="text-secondary me-2">Welcome, <span id="username"></span></span>
+                        <button id="logoutBtn" class="btn btn-secondary">Logout</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container-fluid py-4" role="main">
+        <!-- Status Messages -->
+        <div id="statusMessages" class="alert alert-info hidden" role="alert" aria-live="polite"></div>
+
+        <!-- Controls Bar -->
+        <div class="d-flex justify-content-between align-items-center flex-wrap mb-4">
+            <!-- Filters -->
+            <div class="d-flex align-items-center flex-wrap">
+                <select id="sourceFilter" class="form-select me-2" style="width: auto; min-width: 150px;" aria-label="Filter by news source">
+                    <option value="">All Sources</option>
+                </select>
+                
+                <select id="categoryFilter" class="form-select me-2" style="width: auto; min-width: 150px;" aria-label="Filter by category">
+                    <option value="">All Categories</option>
+                    <option value="general">General</option>
+                    <option value="technology">Technology</option>
+                    <option value="business">Business</option>
+                    <option value="science">Science</option>
+                    <option value="health">Health</option>
+                    <option value="stocks">Stocks</option>
+                    <option value="crypto">Crypto</option>
+                </select>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="d-flex align-items-center">
+                <button id="refreshBtn" class="btn btn-secondary me-2" aria-label="Refresh news feed">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M23 4v6h-6"></path>
+                        <path d="M1 20v-6h6"></path>
+                        <circle cx="12" cy="12" r="9"></circle>
+                    </svg>
+                    Refresh
+                </button>
+                
+                <button id="favoritesToggle" class="btn btn-secondary" aria-label="Toggle favorites view">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
+                    </svg>
+                    Favorites
+                </button>
+            </div>
+        </div>
+
+        <!-- Loading State -->
+        <div id="loadingState" class="text-center py-5">
+            <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="text-secondary mt-3">Loading latest news...</p>
+        </div>
+
+        <!-- News Grid -->
+        <div id="newsContainer">
+            <!-- Search Results Info -->
+            <div id="searchInfo" class="mb-4 hidden">
+                <p class="text-secondary">
+                    Showing <span id="resultCount">0</span> results
+                    <span id="searchQuery"></span>
+                </p>
+            </div>
+
+            <!-- News Grid -->
+            <div id="newsList" class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4" role="list">
+                <!-- News cards will be inserted here -->
+            </div>
+
+            <!-- Empty State -->
+            <div id="emptyState" class="text-center py-5 hidden">
+                <div style="font-size: 4rem; margin-bottom: 1rem;">📰</div>
+                <h2>No articles found</h2>
+                <p class="text-secondary">Try adjusting your search or filters.</p>
+                <button id="clearFiltersBtn" class="btn btn-primary mt-3">Clear Filters</button>
+            </div>
+
+            <!-- Error State -->
+            <div id="errorState" class="text-center py-5 hidden">
+                <div style="font-size: 4rem; margin-bottom: 1rem;">⚠️</div>
+                <h2>Failed to load news</h2>
+                <p class="text-secondary" id="errorMessage">Please check your connection and try again.</p>
+                <button id="retryBtn" class="btn btn-primary mt-3">Try Again</button>
+            </div>
+        </div>
+
+        <!-- Favorites Section -->
+        <div id="favoritesSection" class="py-4 hidden">
+            <h2 class="mb-4">Your Favorites</h2>
+            <div id="favoritesList" class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4" role="list" data-article-id="id">
+                <!-- Favorite articles will be inserted here -->
+            </div>
+            
+            <div id="emptyFavorites" class="text-center py-5 hidden">
+                <div style="font-size: 4rem; margin-bottom: 1rem;">⭐</div>
+                <h3>No favorites yet</h3>
+                <p class="text-secondary">Save interesting articles to read them later.</p>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-light py-4 mt-5 border-top">
+        <div class="container text-center">
+            <p class="text-muted mb-0">
+                AI News Aggregator &copy; 2024 | 
+                <a href="#" class="text-primary">Privacy Policy</a> | 
+                <a href="#" class="text-primary">Terms of Service</a>
+            </p>
+            <p class="text-muted small mt-2">
+                Powered by RSS feeds, NewsAPI, and Azure AI
+            </p>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS (optional, for components that need JS) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+
+    <!-- JavaScript Modules -->
+    <script src="auth.js"></script>
+    <script src="favorites.js"></script>
+    <script src="search.js"></script>
+    <script src="script.js?v=4"></script>
+
+    <!-- Initialize App -->
+    <script>
+        // Theme toggle functionality - Initialize immediately
+        function initializeTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            
+            const themeText = document.getElementById('themeText');
+            if (themeText) {
+                themeText.textContent = savedTheme === 'dark' ? 'Light Mode' : 'Dark Mode';
+            }
+        }
+        
+        function setupThemeToggle() {
+            const themeToggle = document.getElementById('themeToggle');
+            const themeText = document.getElementById('themeText');
+            
+            if (themeToggle) {
+                themeToggle.addEventListener('click', function() {
+                    const currentTheme = document.documentElement.getAttribute('data-theme');
+                    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                    
+                    document.documentElement.setAttribute('data-theme', newTheme);
+                    localStorage.setItem('theme', newTheme);
+                    
+                    if (themeText) {
+                        themeText.textContent = newTheme === 'dark' ? 'Light Mode' : 'Dark Mode';
+                    }
+                });
+            }
+        }
+        
+        // Initialize theme immediately (before DOM load)
+        initializeTheme();
+        
+        // Initialize the application when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            // Setup theme toggle
+            setupThemeToggle();
+            
+            // Initialize modules
+            if (typeof Auth !== 'undefined') {
+                Auth.init();
+            }
+            
+            if (typeof Favorites !== 'undefined') {
+                Favorites.init();
+            }
+            
+            if (typeof Search !== 'undefined') {
+                Search.init();
+            }
+            
+            if (typeof App !== 'undefined') {
+                App.init();
+            } else {
+                // Manual setup if App is not available
+                const favoritesToggle = document.getElementById('favoritesToggle');
+                if (favoritesToggle) {
+                    favoritesToggle.addEventListener('click', function() {
+                        const newsContainer = document.getElementById('newsContainer');
+                        const favoritesSection = document.getElementById('favoritesSection');
+                        const favoritesList = document.getElementById('favoritesList');
+                        
+                        if (newsContainer && favoritesSection) {
+                            const isShowingNews = !newsContainer.classList.contains('hidden');
+                            
+                            if (isShowingNews) {
+                                newsContainer.classList.add('hidden');
+                                favoritesSection.classList.remove('hidden');
+                                favoritesToggle.innerHTML = `
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path>
+                                    </svg>
+                                    All News
+                                `;
+                                
+                                if (favoritesList && typeof Favorites !== 'undefined') {
+                                    favoritesList.innerHTML = '';
+                                    const favorites = Favorites.getFavorites();
+                                    
+                                    if (favorites.length === 0) {
+                                        const emptyFavorites = document.getElementById('emptyFavorites');
+                                        if (emptyFavorites) emptyFavorites.classList.remove('hidden');
+                                    } else {
+                                        const emptyFavorites = document.getElementById('emptyFavorites');
+                                        if (emptyFavorites) emptyFavorites.classList.add('hidden');
+                                        
+                                        favorites.forEach(favorite => {
+                                            const card = Favorites.createFavoriteCard(favorite, {
+                                                showRemoveButton: true,
+                                                onRemove: (articleId) => {
+                                                    Favorites.removeFavorite(articleId);
+                                                    favoritesToggle.click();
+                                                    setTimeout(() => favoritesToggle.click(), 100);
+                                                }
+                                            });
+                                            favoritesList.appendChild(card);
+                                        });
+                                    }
+                                }
+                            } else {
+                                newsContainer.classList.remove('hidden');
+                                favoritesSection.classList.add('hidden');
+                                favoritesToggle.innerHTML = `
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
+                                    </svg>
+                                    Favorites
+                                `;
+                            }
+                        }
+                    });
+                }
+            }
+        });
+    </script>
+</body>
+</html>

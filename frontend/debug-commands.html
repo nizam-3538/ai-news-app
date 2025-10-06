@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>🔧 Quick Fix Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test { margin: 15px 0; padding: 15px; border: 1px solid #ddd; border-radius: 6px; }
+        .success { background: #d4edda; border-color: #28a745; }
+        .error { background: #f8d7da; border-color: #dc3545; }
+        button { padding: 10px 20px; margin: 5px; border: none; border-radius: 4px; cursor: pointer; }
+        .btn-primary { background: #007bff; color: white; }
+        .btn-success { background: #28a745; color: white; }
+        .btn-warning { background: #ffc107; color: black; }
+    </style>
+</head>
+<body>
+    <h1>🔧 Quick Fix for Favorites Toggle</h1>
+    
+    <div class="test">
+        <h3>Manual Console Commands for Debugging</h3>
+        <p>Copy these commands and run them in the browser console on the main page:</p>
+        
+        <h4>1. Check Module Loading:</h4>
+        <code id="moduleCheck" style="display: block; background: #f8f9fa; padding: 10px; margin: 5px 0; border-radius: 4px;">
+console.log('🔍 Module Status Check:');
+console.log('App:', typeof App, App ? '✅' : '❌');
+console.log('Favorites:', typeof Favorites, Favorites ? '✅' : '❌');
+console.log('Search:', typeof Search, Search ? '✅' : '❌');
+console.log('Auth:', typeof Auth, Auth ? '✅' : '❌');
+        </code>
+        
+        <h4>2. Check DOM Elements:</h4>
+        <code id="domCheck" style="display: block; background: #f8f9fa; padding: 10px; margin: 5px 0; border-radius: 4px;">
+console.log('🔍 DOM Elements Check:');
+const elements = ['favoritesToggle', 'newsContainer', 'favoritesSection', 'favoritesList'];
+elements.forEach(id => {
+    const el = document.getElementById(id);
+    console.log(`${id}:`, el ? '✅ Found' : '❌ Missing', el);
+});
+        </code>
+        
+        <h4>3. Manual Toggle Test:</h4>
+        <code id="toggleTest" style="display: block; background: #f8f9fa; padding: 10px; margin: 5px 0; border-radius: 4px;">
+// Manual toggle without App object
+const newsContainer = document.getElementById('newsContainer');
+const favoritesSection = document.getElementById('favoritesSection');
+const favoritesList = document.getElementById('favoritesList');
+const favoritesToggle = document.getElementById('favoritesToggle');
+
+if (newsContainer && favoritesSection) {
+    // Toggle views
+    newsContainer.classList.toggle('hidden');
+    favoritesSection.classList.toggle('hidden');
+    
+    // Update button text
+    if (favoritesToggle) {
+        favoritesToggle.innerHTML = newsContainer.classList.contains('hidden') 
+            ? 'All News' : 'Favorites';
+    }
+    
+    // If showing favorites, render them
+    if (!favoritesSection.classList.contains('hidden') && Favorites) {
+        if (favoritesList) {
+            favoritesList.innerHTML = '';
+            const favorites = Favorites.getFavorites();
+            favorites.forEach(fav => {
+                const card = Favorites.createFavoriteCard(fav);
+                favoritesList.appendChild(card);
+            });
+            console.log('✅ Favorites rendered:', favorites.length);
+        }
+    }
+    
+    console.log('✅ Manual toggle completed');
+} else {
+    console.log('❌ Required DOM elements not found');
+}
+        </code>
+        
+        <h4>4. Force App Initialization:</h4>
+        <code id="forceInit" style="display: block; background: #f8f9fa; padding: 10px; margin: 5px 0; border-radius: 4px;">
+// Force reload and initialize
+window.location.reload();
+
+// Or try manual initialization:
+if (typeof App !== 'undefined') {
+    App.init();
+    console.log('✅ App manually initialized');
+} else {
+    console.log('❌ App module not available for initialization');
+}
+        </code>
+    </div>
+    
+    <div class="test">
+        <h3>Quick Actions</h3>
+        <button class="btn-primary" onclick="window.open('http://localhost:8000/', '_blank')">Open Main App</button>
+        <button class="btn-success" onclick="copyToClipboard('moduleCheck')">Copy Module Check</button>
+        <button class="btn-success" onclick="copyToClipboard('domCheck')">Copy DOM Check</button>
+        <button class="btn-warning" onclick="copyToClipboard('toggleTest')">Copy Manual Toggle</button>
+    </div>
+    
+    <div class="test">
+        <h3>🎯 Expected Behavior</h3>
+        <p>When the favorites toggle works correctly:</p>
+        <ol>
+            <li>Click "Favorites" button → News section hides, Favorites section shows</li>
+            <li>Button text changes to "All News"</li>
+            <li>Your saved favorites appear in the favorites section</li>
+            <li>Click "All News" → Returns to main news view</li>
+        </ol>
+    </div>
+    
+    <script>
+        function copyToClipboard(elementId) {
+            const element = document.getElementById(elementId);
+            const text = element.textContent;
+            
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(text).then(() => {
+                    alert('✅ Copied to clipboard! Paste in browser console.');
+                });
+            } else {
+                // Fallback
+                const textArea = document.createElement('textarea');
+                textArea.value = text;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                alert('✅ Copied to clipboard! Paste in browser console.');
+            }
+        }
+    </script>
+</body>
+</html>

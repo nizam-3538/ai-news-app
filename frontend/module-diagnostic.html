@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔍 Module Loading Diagnostic</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
+        .diagnostic { background: white; padding: 20px; margin: 10px 0; border-radius: 8px; border-left: 4px solid #007bff; }
+        .success { border-color: #28a745; background: #d4edda; }
+        .error { border-color: #dc3545; background: #f8d7da; }
+        .warning { border-color: #ffc107; background: #fff3cd; }
+        code { background: #f8f9fa; padding: 2px 4px; border-radius: 3px; }
+    </style>
+</head>
+<body>
+    <h1>🔍 JavaScript Module Loading Diagnostic</h1>
+    
+    <div class="diagnostic">
+        <h3>Step 1: Testing Module Loading Order</h3>
+        <div id="loadingOrder"></div>
+    </div>
+    
+    <div class="diagnostic">
+        <h3>Step 2: DOM Elements Test</h3>
+        <div id="domTest"></div>
+    </div>
+    
+    <div class="diagnostic">
+        <h3>Step 3: App Module Test</h3>
+        <div id="appTest"></div>
+    </div>
+    
+    <div class="diagnostic">
+        <h3>Step 4: Favorites Toggle Test</h3>
+        <div id="toggleTest"></div>
+        <button id="testToggle" onclick="testToggleFunction()">Test Toggle Function</button>
+    </div>
+    
+    <!-- Load modules in the same order as index.html -->
+    <script>
+        console.log('🔄 Starting module loading diagnostic...');
+        const loadOrder = [];
+    </script>
+    
+    <script src="auth.js"></script>
+    <script>
+        console.log('✅ auth.js loaded');
+        loadOrder.push('auth.js - ' + (typeof Auth !== 'undefined' ? 'SUCCESS' : 'FAILED'));
+    </script>
+    
+    <script src="favorites.js"></script>
+    <script>
+        console.log('✅ favorites.js loaded');
+        loadOrder.push('favorites.js - ' + (typeof Favorites !== 'undefined' ? 'SUCCESS' : 'FAILED'));
+    </script>
+    
+    <script src="search.js"></script>
+    <script>
+        console.log('✅ search.js loaded');
+        loadOrder.push('search.js - ' + (typeof Search !== 'undefined' ? 'SUCCESS' : 'FAILED'));
+    </script>
+    
+    <script src="script.js"></script>
+    <script>
+        console.log('✅ script.js loaded');
+        loadOrder.push('script.js - ' + (typeof App !== 'undefined' ? 'SUCCESS' : 'FAILED'));
+    </script>
+    
+    <!-- Create minimal DOM elements for testing -->
+    <div id="favoritesToggle" style="display: none;">Test Button</div>
+    <div id="newsContainer" style="display: none;">News</div>
+    <div id="favoritesSection" class="hidden" style="display: none;">Favorites</div>
+    <div id="favoritesList" style="display: none;">List</div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('📋 DOM Content Loaded - Running diagnostics...');
+            
+            // Test 1: Loading Order
+            const loadingOrderDiv = document.getElementById('loadingOrder');
+            loadingOrderDiv.innerHTML = loadOrder.map(item => 
+                `<div>${item.includes('SUCCESS') ? '✅' : '❌'} ${item}</div>`
+            ).join('');
+            
+            // Test 2: DOM Elements
+            const domTestDiv = document.getElementById('domTest');
+            const domElements = {
+                'favoritesToggle': document.getElementById('favoritesToggle'),
+                'newsContainer': document.getElementById('newsContainer'),
+                'favoritesSection': document.getElementById('favoritesSection'),
+                'favoritesList': document.getElementById('favoritesList')
+            };
+            
+            domTestDiv.innerHTML = Object.entries(domElements).map(([name, element]) =>
+                `<div>${element ? '✅' : '❌'} ${name}: ${element ? 'Found' : 'Missing'}</div>`
+            ).join('');
+            
+            // Test 3: App Module
+            const appTestDiv = document.getElementById('appTest');
+            const modules = {
+                'Auth': typeof Auth,
+                'Favorites': typeof Favorites,
+                'Search': typeof Search,
+                'App': typeof App
+            };
+            
+            appTestDiv.innerHTML = Object.entries(modules).map(([name, type]) =>
+                `<div>${type !== 'undefined' ? '✅' : '❌'} ${name}: ${type}</div>`
+            ).join('');
+            
+            // Test 4: Initialize modules if they exist
+            const toggleTestDiv = document.getElementById('toggleTest');
+            let initResults = [];
+            
+            try {
+                if (typeof Auth !== 'undefined') {
+                    Auth.init();
+                    initResults.push('✅ Auth.init() - SUCCESS');
+                } else {
+                    initResults.push('❌ Auth.init() - MODULE NOT FOUND');
+                }
+            } catch (error) {
+                initResults.push('❌ Auth.init() - ERROR: ' + error.message);
+            }
+            
+            try {
+                if (typeof Favorites !== 'undefined') {
+                    Favorites.init();
+                    initResults.push('✅ Favorites.init() - SUCCESS');
+                } else {
+                    initResults.push('❌ Favorites.init() - MODULE NOT FOUND');
+                }
+            } catch (error) {
+                initResults.push('❌ Favorites.init() - ERROR: ' + error.message);
+            }
+            
+            try {
+                if (typeof Search !== 'undefined') {
+                    Search.init();
+                    initResults.push('✅ Search.init() - SUCCESS');
+                } else {
+                    initResults.push('❌ Search.init() - MODULE NOT FOUND');
+                }
+            } catch (error) {
+                initResults.push('❌ Search.init() - ERROR: ' + error.message);
+            }
+            
+            try {
+                if (typeof App !== 'undefined') {
+                    App.init();
+                    initResults.push('✅ App.init() - SUCCESS');
+                } else {
+                    initResults.push('❌ App.init() - MODULE NOT FOUND');
+                }
+            } catch (error) {
+                initResults.push('❌ App.init() - ERROR: ' + error.message);
+            }
+            
+            toggleTestDiv.innerHTML = initResults.join('<br>');
+        });
+        
+        function testToggleFunction() {
+            const output = [];
+            
+            console.log('🔄 Testing toggle functionality...');
+            
+            if (typeof App === 'undefined') {
+                output.push('❌ App module not available');
+                document.getElementById('toggleTest').innerHTML += '<br><strong>❌ Cannot test toggle - App module not loaded</strong>';
+                return;
+            }
+            
+            if (typeof App.toggleFavorites !== 'function') {
+                output.push('❌ App.toggleFavorites is not a function');
+                document.getElementById('toggleTest').innerHTML += '<br><strong>❌ App.toggleFavorites method not found</strong>';
+                return;
+            }
+            
+            try {
+                const initialState = App.showingFavorites;
+                output.push(`📊 Initial state: ${initialState}`);
+                
+                App.toggleFavorites();
+                output.push(`📊 After toggle: ${App.showingFavorites}`);
+                
+                output.push('✅ Toggle function executed successfully');
+                document.getElementById('toggleTest').innerHTML += '<br><strong>✅ Toggle test passed!</strong><br>' + output.join('<br>');
+            } catch (error) {
+                output.push('❌ Toggle error: ' + error.message);
+                document.getElementById('toggleTest').innerHTML += '<br><strong>❌ Toggle test failed:</strong><br>' + output.join('<br>');
+            }
+        }
+    </script>
+</body>
+</html>

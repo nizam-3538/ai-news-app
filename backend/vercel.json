@@ -1,0 +1,18 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "test-server-simple.js",
+      "use": "@vercel/node"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "test-server-simple.js"
+    }
+  ],
+  "env": {
+    "NODE_ENV": "production"
+  }
+}

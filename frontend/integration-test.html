@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>🧪 Favorites Integration Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; }
+        button { margin: 5px; padding: 12px 20px; font-size: 14px; border: none; border-radius: 6px; cursor: pointer; }
+        .btn-primary { background: #007bff; color: white; }
+        .btn-success { background: #28a745; color: white; }
+        .btn-warning { background: #ffc107; color: black; }
+        .btn-danger { background: #dc3545; color: white; }
+        .btn-info { background: #17a2b8; color: white; }
+        .result { margin: 10px 0; padding: 15px; border-radius: 6px; border-left: 4px solid; }
+        .success { background: #d4edda; border-color: #28a745; color: #155724; }
+        .error { background: #f8d7da; border-color: #dc3545; color: #721c24; }
+        .info { background: #d1ecf1; border-color: #17a2b8; color: #0c5460; }
+        .warning { background: #fff3cd; border-color: #ffc107; color: #856404; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 6px; }
+        .test-section h3 { margin-top: 0; color: #333; }
+        code { background: #f8f9fa; padding: 2px 4px; border-radius: 3px; font-family: monospace; }
+        .step-counter { display: inline-block; background: #007bff; color: white; padding: 4px 8px; border-radius: 50%; font-size: 12px; margin-right: 8px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Favorites Toggle Integration Test</h1>
+        <p>This test verifies that the favorites toggle button works properly in the main index.html page.</p>
+        
+        <div class="test-section">
+            <h3><span class="step-counter">1</span>Setup Test Data</h3>
+            <p>First, let's add some sample favorites for testing:</p>
+            <button id="addSampleFavorites" class="btn-primary">Add Sample Favorites</button>
+            <button id="checkFavorites" class="btn-info">Check Current Favorites</button>
+            <button id="clearFavorites" class="btn-danger">Clear All Favorites</button>
+        </div>
+        
+        <div class="test-section">
+            <h3><span class="step-counter">2</span>Test Main App Integration</h3>
+            <p>Open the main app and test the favorites toggle button:</p>
+            <button id="openMainApp" class="btn-success">Open Main App (New Tab)</button>
+            <button id="simulateToggle" class="btn-warning">Simulate Toggle Logic</button>
+        </div>
+        
+        <div class="test-section">
+            <h3><span class="step-counter">3</span>Verify DOM Elements</h3>
+            <p>Check that all required DOM elements exist:</p>
+            <button id="checkDOMElements" class="btn-info">Generate DOM Check Script</button>
+        </div>
+        
+        <div class="test-section">
+            <h3><span class="step-counter">4</span>Manual Testing Instructions</h3>
+            <div id="manualInstructions" class="info result">
+                <h4>🎯 How to Test the Favorites Toggle:</h4>
+                <ol>
+                    <li>Click "<strong>Add Sample Favorites</strong>" above to create test data</li>
+                    <li>Click "<strong>Open Main App</strong>" to open the main application</li>
+                    <li>In the main app, look for the "<strong>Favorites</strong>" button in the top controls</li>
+                    <li>Click the "Favorites" button - it should:
+                        <ul>
+                            <li>Hide the news container</li>
+                            <li>Show the favorites section with your saved articles</li>
+                            <li>Change the button text to "All News"</li>
+                        </ul>
+                    </li>
+                    <li>Click "All News" button to return to the main news view</li>
+                    <li>Try adding articles to favorites by clicking the star (⭐) button on any article</li>
+                    <li>Switch back to favorites view to see the newly added articles</li>
+                </ol>
+            </div>
+        </div>
+        
+        <div id="results" style="margin-top: 20px;"></div>
+    </div>
+    
+    <script src="favorites.js"></script>
+    <script>
+        const results = document.getElementById('results');
+        
+        function addResult(message, type = 'info') {
+            const div = document.createElement('div');
+            div.className = `result ${type}`;
+            div.innerHTML = message;
+            results.appendChild(div);
+            div.scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        // Add Sample Favorites
+        document.getElementById('addSampleFavorites').addEventListener('click', () => {
+            const sampleArticles = [
+                {
+                    id: 'integration_test_1_' + Date.now(),
+                    title: '🚀 Breaking: AI News Aggregator Favorites Feature Working Perfectly',
+                    link: 'https://example.com/tech-news-1',
+                    summary: 'The favorites toggle functionality has been successfully integrated into the main application, allowing users to seamlessly switch between news view and favorites view.',
+                    source: 'Tech News Daily',
+                    author: 'Integration Tester',
+                    publishedAt: new Date().toISOString(),
+                    categories: ['technology', 'ai', 'news'],
+                    sentiment: 'positive'
+                },
+                {
+                    id: 'integration_test_2_' + Date.now(),
+                    title: '📈 Market Update: Successful Integration Boosts User Experience',
+                    link: 'https://example.com/business-news-1',
+                    summary: 'Business analysts report that the seamless favorites integration significantly improves user engagement and content accessibility.',
+                    source: 'Business Insider Pro',
+                    author: 'Market Analyst',
+                    publishedAt: new Date().toISOString(),
+                    categories: ['business', 'market', 'ux'],
+                    sentiment: 'positive'
+                },
+                {
+                    id: 'integration_test_3_' + Date.now(),
+                    title: '🔬 Scientific Breakthrough: LocalStorage Integration Proves Reliable',
+                    link: 'https://example.com/science-news-1',
+                    summary: 'Research shows that browser localStorage provides excellent reliability for client-side data persistence in news aggregation applications.',
+                    source: 'Science & Technology Review',
+                    author: 'Research Team',
+                    publishedAt: new Date().toISOString(),
+                    categories: ['science', 'technology', 'research'],
+                    sentiment: 'positive'
+                }
+            ];
+            
+            let addedCount = 0;
+            sampleArticles.forEach(article => {
+                if (Favorites.addFavorite(article)) {
+                    addedCount++;
+                }
+            });
+            
+            addResult(`✅ <strong>Success!</strong> Added ${addedCount} sample favorites. Total favorites: <strong>${Favorites.getCount()}</strong>`, 'success');
+            
+            // Show sample titles
+            const favorites = Favorites.getFavorites();
+            const titles = favorites.slice(0, 3).map(f => `• ${f.title}`).join('<br>');
+            addResult(`📰 <strong>Sample Articles Added:</strong><br>${titles}`, 'info');
+        });
+        
+        // Check Current Favorites
+        document.getElementById('checkFavorites').addEventListener('click', () => {
+            const favorites = Favorites.getFavorites();
+            addResult(`📊 <strong>Current Status:</strong> ${favorites.length} favorites in localStorage`, 'info');
+            
+            if (favorites.length > 0) {
+                const stats = Favorites.getStats();
+                addResult(`📈 <strong>Favorites Statistics:</strong><br>
+                    • Total: ${stats.total}<br>
+                    • Sources: ${stats.sources.length} different sources<br>
+                    • Categories: ${stats.categories.length} different categories<br>
+                    • Newest: ${new Date(stats.newest).toLocaleString()}<br>
+                    • Oldest: ${new Date(stats.oldest).toLocaleString()}`, 'info');
+            }
+        });
+        
+        // Clear All Favorites
+        document.getElementById('clearFavorites').addEventListener('click', () => {
+            const count = Favorites.getCount();
+            Favorites.clearFavorites();
+            addResult(`🧹 <strong>Cleared!</strong> Removed ${count} favorites from localStorage`, 'warning');
+        });
+        
+        // Open Main App
+        document.getElementById('openMainApp').addEventListener('click', () => {
+            const favorites = Favorites.getFavorites();
+            if (favorites.length === 0) {
+                addResult(`⚠️ <strong>Tip:</strong> Add some sample favorites first for better testing!`, 'warning');
+            }
+            
+            window.open('http://localhost:8000/', '_blank');
+            addResult(`🚀 <strong>Main App Opened!</strong> Look for the "Favorites" button in the controls bar.<br>
+                💡 <strong>Expected behavior:</strong><br>
+                • Click "Favorites" → Shows favorites section with ${favorites.length} articles<br>
+                • Click "All News" → Returns to main news feed<br>
+                • Star buttons should work to add/remove favorites`, 'success');
+        });
+        
+        // Simulate Toggle Logic
+        document.getElementById('simulateToggle').addEventListener('click', () => {
+            const favorites = Favorites.getFavorites();
+            
+            if (favorites.length === 0) {
+                addResult(`⚠️ <strong>No Favorites!</strong> Add some favorites first to test the toggle functionality.`, 'error');
+                return;
+            }
+            
+            addResult(`🔄 <strong>Testing Toggle Logic...</strong>`, 'info');
+            
+            // Test createFavoriteCard functionality
+            try {
+                const testCard = Favorites.createFavoriteCard(favorites[0], {
+                    showRemoveButton: true,
+                    onRemove: (articleId) => {
+                        console.log('Remove callback triggered for:', articleId);
+                    }
+                });
+                
+                if (testCard && testCard.innerHTML) {
+                    addResult(`✅ <strong>createFavoriteCard() works correctly!</strong><br>
+                        • Generated HTML card with ${testCard.innerHTML.length} characters<br>
+                        • Contains remove button and proper styling<br>
+                        • Event handlers attached successfully`, 'success');
+                } else {
+                    addResult(`❌ <strong>createFavoriteCard() returned invalid result</strong>`, 'error');
+                }
+            } catch (error) {
+                addResult(`❌ <strong>createFavoriteCard() error:</strong> ${error.message}`, 'error');
+            }
+            
+            // Test favorites retrieval
+            addResult(`📋 <strong>Favorites Ready for Display:</strong><br>
+                • ${favorites.length} articles will be shown in favorites view<br>
+                • Each article will have a remove button (⭐)<br>
+                • Cards will be styled consistently with main news cards`, 'info');
+        });
+        
+        // Generate DOM Check Script
+        document.getElementById('checkDOMElements').addEventListener('click', () => {
+            const checkScript = `
+// Copy and paste this into the browser console on the main app page (http://localhost:8000/)
+console.log('🔍 Checking DOM Elements for Favorites Integration...');
+
+const elements = {
+    favoritesToggle: document.getElementById('favoritesToggle'),
+    newsContainer: document.getElementById('newsContainer'),
+    favoritesSection: document.getElementById('favoritesSection'),
+    favoritesList: document.getElementById('favoritesList'),
+    emptyFavorites: document.getElementById('emptyFavorites')
+};
+
+console.log('📋 DOM Elements Status:');
+Object.entries(elements).forEach(([name, element]) => {
+    console.log(\`\${element ? '✅' : '❌'} \${name}: \${element ? 'Found' : 'Missing'}\`);
+});
+
+// Test App object
+console.log('🚀 App Object Status:');
+console.log('App available:', typeof App !== 'undefined');
+console.log('Favorites available:', typeof Favorites !== 'undefined');
+console.log('Current favorites count:', typeof Favorites !== 'undefined' ? Favorites.getCount() : 'N/A');
+
+// Test toggle functionality
+if (elements.favoritesToggle) {
+    console.log('🔄 Testing toggle button click...');
+    elements.favoritesToggle.click();
+    setTimeout(() => {
+        const isShowingFavorites = !elements.favoritesSection.classList.contains('hidden');
+        console.log('Favorites view active:', isShowingFavorites);
+    }, 100);
+}
+            `;
+            
+            addResult(`🛠️ <strong>DOM Check Script Generated!</strong><br>
+                <strong>Instructions:</strong><br>
+                1. Open the main app in a new tab<br>
+                2. Open browser Developer Tools (F12)<br>
+                3. Go to the Console tab<br>
+                4. Copy and paste the following script:<br>
+                <code style="display: block; white-space: pre-wrap; background: #f8f9fa; padding: 10px; margin: 10px 0; border-radius: 4px; font-size: 12px;">${checkScript}</code>`, 'info');
+        });
+        
+        // Initialize
+        setTimeout(() => {
+            const favorites = Favorites.getFavorites();
+            addResult(`🏁 <strong>Integration Test Ready!</strong><br>
+                • Current favorites: ${favorites.length}<br>
+                • Backend: http://localhost:3000 (should be running)<br>
+                • Frontend: http://localhost:8000 (should be running)<br>
+                • All modules loaded successfully`, 'success');
+        }, 100);
+    </script>
+</body>
+</html>

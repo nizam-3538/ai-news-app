@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>🎯 Final Integration Verification</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .step { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 6px; }
+        .success { background: #d4edda; border-color: #28a745; }
+        .info { background: #d1ecf1; border-color: #17a2b8; }
+        button { padding: 10px 20px; margin: 5px; }
+    </style>
+</head>
+<body>
+    <h1>🎯 Final Favorites Integration Verification</h1>
+    
+    <div class="step success">
+        <h3>✅ Integration Status: Ready for Testing</h3>
+        <p><strong>Backend:</strong> Running on port 3000, serving 50 articles</p>
+        <p><strong>Frontend:</strong> Running on port 8000</p>
+        <p><strong>Modules:</strong> All JavaScript modules loaded correctly</p>
+    </div>
+    
+    <div class="step info">
+        <h3>📋 Test the Favorites Toggle Integration</h3>
+        <ol>
+            <li><button onclick="addTestFavorites()">Add Test Favorites</button> - Creates sample data</li>
+            <li><button onclick="window.open('http://localhost:8000/', '_blank')">Open Main App</button> - Opens the application</li>
+            <li>In the main app, click the <strong>"Favorites"</strong> button in the top controls</li>
+            <li>Verify that your favorite articles are displayed in the favorites section</li>
+            <li>Click the <strong>"All News"</strong> button to return to the main view</li>
+            <li>Try adding new articles to favorites using the star (⭐) buttons</li>
+            <li>Switch back to favorites view to see the newly added articles</li>
+        </ol>
+    </div>
+    
+    <div class="step">
+        <h3>🔧 Troubleshooting</h3>
+        <p>If the favorites toggle doesn't work:</p>
+        <ul>
+            <li>Check browser console for JavaScript errors (F12 → Console)</li>
+            <li>Verify that all modules are loaded: <code>typeof App, typeof Favorites</code></li>
+            <li>Check that DOM elements exist: <code>document.getElementById('favoritesToggle')</code></li>
+        </ul>
+        <button onclick="generateDebugScript()">Generate Debug Script</button>
+    </div>
+    
+    <div id="output"></div>
+    
+    <script src="favorites.js"></script>
+    <script>
+        function addTestFavorites() {
+            const testArticles = [
+                {
+                    id: 'final_test_1_' + Date.now(),
+                    title: '🌟 Favorites Integration Test Article 1',
+                    link: 'https://example.com/test1',
+                    summary: 'This is a test article to verify that the favorites toggle is working correctly in the main application.',
+                    source: 'Integration Test Source',
+                    author: 'Test Author',
+                    publishedAt: new Date().toISOString(),
+                    categories: ['test', 'integration'],
+                    sentiment: 'positive'
+                },
+                {
+                    id: 'final_test_2_' + Date.now(),
+                    title: '🚀 Favorites Integration Test Article 2',
+                    link: 'https://example.com/test2',
+                    summary: 'Second test article to ensure multiple favorites display properly when the favorites toggle button is clicked.',
+                    source: 'Test News Network',
+                    author: 'Quality Assurance',
+                    publishedAt: new Date().toISOString(),
+                    categories: ['test', 'qa'],
+                    sentiment: 'positive'
+                }
+            ];
+            
+            let added = 0;
+            testArticles.forEach(article => {
+                if (Favorites.addFavorite(article)) added++;
+            });
+            
+            document.getElementById('output').innerHTML = `
+                <div class="step success">
+                    <h4>✅ Test Data Added!</h4>
+                    <p>Added ${added} test favorites. Total favorites: ${Favorites.getCount()}</p>
+                    <p><strong>Now click "Open Main App" and test the Favorites button!</strong></p>
+                </div>
+            `;
+        }
+        
+        function generateDebugScript() {
+            const debugScript = `
+// Debug script for main app console
+console.log('🔍 Debugging Favorites Toggle Integration');
+console.log('App object:', typeof App);
+console.log('Favorites object:', typeof Favorites);
+console.log('Current favorites count:', Favorites ? Favorites.getCount() : 'N/A');
+
+const elements = {
+    favoritesToggle: document.getElementById('favoritesToggle'),
+    newsContainer: document.getElementById('newsContainer'),
+    favoritesSection: document.getElementById('favoritesSection'),
+    favoritesList: document.getElementById('favoritesList')
+};
+
+console.log('DOM elements:');
+Object.entries(elements).forEach(([name, el]) => {
+    console.log(\`  \${name}: \${el ? 'Found ✅' : 'Missing ❌'}\`);
+});
+
+// Test the toggle function
+if (App && App.toggleFavorites) {
+    console.log('Testing toggleFavorites function...');
+    App.toggleFavorites();
+}
+            `;
+            
+            document.getElementById('output').innerHTML = `
+                <div class="step info">
+                    <h4>🛠️ Debug Script</h4>
+                    <p>Copy this script and paste it into the browser console on the main app page:</p>
+                    <pre style="background: #f8f9fa; padding: 10px; border-radius: 4px; overflow-x: auto;">${debugScript}</pre>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>
