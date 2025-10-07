@@ -100,74 +100,14 @@ app.use((err, req, res, _next) => {
 });
 
 // --- Database Connection ---
-// The database connection is established once and reused across the application.
-// This is a standard best practice for server applications to ensure efficiency.
-// The connection is gracefully closed when the application shuts down.
-// Automated scanners may flag this as a resource leak, but this is a false positive.
-async function connectDatabase() {
-  if (!MONGODB_URI) {
-    console.warn('MongoDB URI not provided; authentication features will be disabled.');
-    return;
-  }
-  try {
-    await mongoose.connect(MONGODB_URI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-      maxPoolSize: 10,
-      serverSelectionTimeoutMS: 5000,
-    });
-  } catch (error) {
-    console.error('Initial MongoDB connection failed. Exiting...', error);
-    process.exit(1);
-  }
+if (!MONGODB_URI) {
+  console.warn('MongoDB URI not provided; authentication features will be disabled.');
+} else {
+  mongoose.connect(MONGODB_URI)
+    .then(() => console.log('MongoDB connected successfully.'))
+    .catch(err => console.error('MongoDB connection error:', err));
 }
 
-// Mongoose connection event logging
-mongoose.connection.on('connecting', () => console.log('Connecting to MongoDB...'));
-mongoose.connection.on('connected', () => console.log('MongoDB connected successfully.'));
-mongoose.connection.on('error', (err) => console.error('MongoDB connection error:', err));
-mongoose.connection.on('disconnected', () => console.warn('MongoDB disconnected.'));
-
-// --- Server Startup and Shutdown ---
-async function startServer() {
-  await connectDatabase();
-  
-  const server = app.listen(PORT, () => {
-    console.log(`🚀 Server running on port ${PORT} in ${NODE_ENV} mode.`);
-  });
-
-  const gracefulShutdown = (signal) => {
-    console.log(`\n${signal} received. Starting graceful shutdown...`);
-    server.close(() => {
-      console.log('HTTP server closed.');
-      mongoose.connection.close(false, () => {
-        console.log('MongoDB connection closed.');
-        process.exit(0);
-      });
-    });
-
-    setTimeout(() => {
-      console.error('Could not close connections in time, forcing shutdown.');
-      process.exit(1);
-    }, 10000);
-  };
-
-  process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
-  process.on('SIGINT', () => gracefulShutdown('SIGINT'));
-}
-
-process.on('uncaughtException', (err) => {
-  console.error('Uncaught Exception:', err);
-  process.exit(1);
-});
-
-process.on('unhandledRejection', (reason) => {
-  console.error('Unhandled Rejection:', reason);
-  process.exit(1);
-});
-
-if (require.main === module) {
-  startServer();
-}
-
+// --- Export the app for Vercel ---
+// Vercel will automatically handle starting the server and listening for requests
 module.exports = app;
