@@ -85,6 +85,7 @@ app.use('/auth', authRoutes);
 app.use('/password-reset', passwordResetRoutes);
 app.use('/favorites', favoritesRoutes);
 
+app.get('/api/test-route', (req, res) => res.json({ message: 'The test route is working!' }));
 // --- Error Handling ---
 app.use('*', (req, res) => {
   res.status(404).json({ ok: false, error: 'Endpoint not found' });
