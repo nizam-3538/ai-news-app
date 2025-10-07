@@ -8,7 +8,7 @@
 const Favorites = {
   // Storage key
   FAVORITES_KEY: 'ai_news_favorites',
-  API_BASE_URL: 'http://localhost:3000', // Update for production
+  API_BASE_URL: 'https://ai-news-app-backend.vercel.app', // Update for production
   
   // Initialize favorites
   init() {
