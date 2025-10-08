@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="420" viewBox="0 0 900 420">
+  <style>
+    .actor { font-family: Arial, sans-serif; font-size:14px; }
+    .line { stroke:#2b6cb0; stroke-width:2; marker-end:url(#arrow); }
+    .box { fill:#f7f9fc; stroke:#2b6cb0; stroke-width:1.5; rx:6; }
+    .lifeline { stroke:#a0aec0; stroke-dasharray:4 4; }
+  </style>
+  <defs>
+    <marker id="arrow" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#2b6cb0" />
+    </marker>
+  </defs>
+
+  <text x="20" y="24" class="actor" style="font-weight:700;">Sequence: Analyze Article</text>
+
+  <!-- Actors -->
+  <rect x="40" y="50" width="120" height="30" class="box"/><text x="100" y="72" text-anchor="middle" class="actor">User (Browser)</text>
+  <rect x="220" y="50" width="140" height="30" class="box"/><text x="290" y="72" text-anchor="middle" class="actor">Frontend</text>
+  <rect x="420" y="50" width="160" height="30" class="box"/><text x="500" y="72" text-anchor="middle" class="actor">Backend (Express)</text>
+  <rect x="640" y="50" width="150" height="30" class="box"/><text x="715" y="72" text-anchor="middle" class="actor">AI Provider</text>
+
+  <!-- Lifelines -->
+  <line x1="100" y1="90" x2="100" y2="340" class="lifeline"/>
+  <line x1="290" y1="90" x2="290" y2="340" class="lifeline"/>
+  <line x1="500" y1="90" x2="500" y2="340" class="lifeline"/>
+  <line x1="715" y1="90" x2="715" y2="340" class="lifeline"/>
+
+  <!-- Messages -->
+  <line x1="100" y1="120" x2="290" y2="120" class="line"/>
+  <text x="195" y="112" text-anchor="middle" class="actor">select article & click Analyze</text>
+
+  <line x1="290" y1="150" x2="500" y2="150" class="line"/>
+  <text x="395" y="142" text-anchor="middle" class="actor">POST /analyze (article text/url)</text>
+
+  <line x1="500" y1="180" x2="715" y2="180" class="line"/>
+  <text x="607" y="172" text-anchor="middle" class="actor">call AI provider (Gemini/Grok)</text>
+
+  <line x1="715" y1="210" x2="500" y2="210" class="line"/>
+  <text x="607" y="202" text-anchor="middle" class="actor">AI analysis result</text>
+
+  <line x1="500" y1="240" x2="290" y2="240" class="line"/>
+  <text x="395" y="232" text-anchor="middle" class="actor">return analysis JSON</text>
+
+  <line x1="290" y1="270" x2="100" y2="270" class="line"/>
+  <text x="195" y="262" text-anchor="middle" class="actor">display analysis to user</text>
+
+</svg>
