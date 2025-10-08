@@ -1,0 +1,8 @@
+[build]
+  publish = "frontend/public"
+  command = "npm run build --workspace=frontend" # Assuming you have a build script in frontend/package.json
+
+[[redirects]]
+  from = "/"
+  to = "/login.html"
+  status = 302
