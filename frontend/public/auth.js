@@ -12,7 +12,7 @@ const Auth = {
   // API configuration
   API_BASE_URL: window.location.hostname === 'localhost' 
     ? 'http://localhost:3000' 
-    : 'https://your-backend-url.vercel.app', // Update this with your actual backend URL
+    : 'https://ai-news-app-backend.vercel.app', // Update this with your actual backend URL
   
   // Initialize authentication
   init() {
