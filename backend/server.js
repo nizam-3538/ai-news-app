@@ -37,7 +37,7 @@ const corsOptions = {
 
     const allowedOrigins = [
       'https://ai-news-app-frontend.netlify.app', // <--- Replace with your Netlify URL
-      // 'https://ai-news-app-frontend.vercel.app', // Optional, remove if Vercel not used
+      //     'https://ai-news-app-frontend.vercel.app', // Optional, remove if Vercel not used
     ];
 
     if (process.env.ALLOWED_ORIGINS) {
