@@ -2,17 +2,14 @@
   "version": 2,
   "builds": [
     {
-      "src": "test-server-simple.js",
+      "src": "backend/api/index.js",
       "use": "@vercel/node"
     }
   ],
   "routes": [
     {
       "src": "/(.*)",
-      "dest": "test-server-simple.js"
+      "dest": "backend/api/index.js"
     }
-  ],
-  "env": {
-    "NODE_ENV": "production"
-  }
+  ]
 }
