@@ -88,6 +88,7 @@ const App = {
       const timestamp = new Date().getTime();
       const url = `${this.API_BASE_URL}/news?_=${timestamp}${force ? '&force=true' : ''}`;
       
+      console.log('Fetching news from:', url);
       const response = await fetch(url);
       
       if (!response.ok) {
