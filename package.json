@@ -11,10 +11,17 @@
     "install:all": "npm install && cd backend && npm install && cd ../frontend && npm install",
     "test": "cd backend && npm test"
   },
-  "keywords": ["news", "aggregator", "ai", "mongodb", "express"],
+  "keywords": [
+    "news",
+    "aggregator",
+    "ai",
+    "mongodb",
+    "express"
+  ],
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "express-validator": "^7.2.1"
+    "express-validator": "^7.2.1",
+    "mongodb": "^6.20.0"
   }
 }
