@@ -78,74 +78,64 @@ const App = {
    * @param {boolean} force - Force refresh (ignore cache)
    */
   async loadNews(force = false) {
-    if (this.loading) return;
+  if (this.loading) return;
 
-    this.setLoading(true);
-    this.hideError();
+  this.setLoading(true);
+  this.hideError();
 
-    try {
-      // Add cache-busting parameter with timestamp
-      const timestamp = new Date().getTime();
-      const url = `${this.API_BASE_URL}/news?_=${timestamp}${force ? '&force=true' : ''}`;
-      
-      console.log('Fetching news from:', url);
-      const response = await fetch(url);
-      
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-      
-      const data = await response.json();
-      
-      if (!data.success) {
-        throw new Error(data.error || 'Failed to load news');
-      }
-      
-      // Clear existing articles before adding new ones
-      this.articles = [];
-      
-      // Process each article with index-based approach
-      data.data.forEach((article, index) => {
-        const cleanArticle = {
-          id: String(article.id || article.link || `article_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`), // Ensure ID is a string
-          title: article.title || 'Untitled',
-          source: article.source || 'Unknown',
-          author: article.author || 'Unknown',
-          summary: article.description || 'No summary available',
-          link: article.link || article.url || '#',
-          publishedAt: article.publishedAt || new Date().toISOString(),
-          sentiment: article.sentiment || 'neutral',
-          categories: Array.isArray(article.categories) 
-            ? article.categories 
-            : (typeof article.categories === 'string' 
-                ? article.categories.split(',') 
-                : []),
-          content: article.content || ''
-        };
-        
-        this.articles.push(cleanArticle);
-      });
-      
-      console.log(`📰 Loaded ${this.articles.length} articles`);
-      
-      // Index articles for search
-      if (typeof Search !== 'undefined') {
-        Search.indexArticles(this.articles);
-      }
-      
-      // Display articles
-      this.displayArticles(this.articles);
-      
-      // Update refresh button
-      this.updateRefreshButton();
-      
-    } catch (error) {
-      console.error('Error loading news:', error); // Log the entire error object
-      this.showError(error.message || 'Failed to load news');
-    } finally {
-      this.setLoading(false);
+  try {
+    const timestamp = new Date().getTime();
+    const url = `${API_BASE_URL}/news?_=${timestamp}${force ? '&force=true' : ''}`;
+    console.log('Fetching news from:', url);
+
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
     }
-  },
+
+    const data = await response.json();
+    if (!data.success) {
+      throw new Error(data.error || 'Failed to load news');
+    }
+
+    this.articles = [];
+    data.data.forEach((article, index) => {
+      const cleanArticle = {
+        id: String(article.id || article.link || `article_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`),
+        title: article.title || 'Untitled',
+        source: article.source || 'Unknown',
+        author: article.author || 'Unknown',
+        summary: article.description || 'No summary available',
+        link: article.link || article.url || '#',
+        publishedAt: article.publishedAt || new Date().toISOString(),
+        sentiment: article.sentiment || 'neutral',
+        categories: Array.isArray(article.categories)
+          ? article.categories
+          : (typeof article.categories === 'string'
+              ? article.categories.split(',')
+              : []),
+        content: article.content || ''
+      };
+      this.articles.push(cleanArticle);
+    });
+
+    console.log(`📰 Loaded ${this.articles.length} articles`);
+
+    if (typeof Search !== 'undefined') {
+      Search.indexArticles(this.articles);
+    }
+
+    this.displayArticles(this.articles);
+    this.updateRefreshButton();
+
+  } catch (error) {
+    console.error('Error loading news:', error);
+    this.showError(error.message || 'Failed to load news');
+  } finally {
+    this.setLoading(false);
+  }
+}
+,
   
   /**
    * Display articles in the grid
