@@ -32,18 +32,19 @@ app.set('trust proxy', 1);
 // CORS configuration
 const corsOptions = {
   origin: function (origin, callback) {
-    // Allow requests with no origin (mobile apps, etc.)
+    // Allow requests with no origin (mobile apps, Postman, etc.)
     if (!origin) return callback(null, true);
-    
+
     const allowedOrigins = [
-      'https://ai-news-app-frontend.vercel.app'
+      'https://ai-news-app-frontend.netlify.app', // <--- Replace with your Netlify URL
+      // 'https://ai-news-app-frontend.vercel.app', // Optional, remove if Vercel not used
     ];
-    
+
     if (process.env.ALLOWED_ORIGINS) {
       allowedOrigins.push(...process.env.ALLOWED_ORIGINS.split(','));
     }
-    
-    if (allowedOrigins.indexOf(origin) !== -1 || NODE_ENV === 'development') {
+
+    if (allowedOrigins.indexOf(origin) !== -1 || process.env.NODE_ENV === 'development') {
       callback(null, true);
     } else {
       callback(new Error('Not allowed by CORS'));
@@ -51,8 +52,11 @@ const corsOptions = {
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
 };
+
+app.use(cors(corsOptions));
+
 
 app.use(cors(corsOptions));
 app.use(express.json({ limit: '10mb' }));
