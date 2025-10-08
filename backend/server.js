@@ -36,10 +36,7 @@ const corsOptions = {
     if (!origin) return callback(null, true);
     
     const allowedOrigins = [
-      'http://localhost:8080',
-      'http://localhost:3000',
-      'http://127.0.0.1:8080',
-      'http://127.0.0.1:3000'
+      'https://ai-news-app-frontend.vercel.app'
     ];
     
     if (process.env.ALLOWED_ORIGINS) {
@@ -218,8 +215,12 @@ process.on('unhandledRejection', (reason) => {
   }, 10000);
 });
 
-if (require.main === module) {
+if (process.env.VERCEL) {
+  // Skip starting server in Vercel
+  console.log("Running on Vercel – no app.listen() needed");
+} else if (require.main === module) {
   startServer();
 }
 
 module.exports = app;
+

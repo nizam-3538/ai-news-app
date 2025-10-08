@@ -1,9 +1,9 @@
 {
   "name": "ai-news-aggregator-backend",
   "version": "1.0.0",
-  "main": "server.js",
+  "main": "backend/api/index.js",
   "scripts": {
-    "start": "node server.js",
+    "start": "vercel dev",
     "dev": "nodemon server.js",
     "build": "echo 'Backend build complete - no compilation needed for Node.js'",
     "test": "echo 'No tests specified yet'",
