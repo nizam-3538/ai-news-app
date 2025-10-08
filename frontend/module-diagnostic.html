@@ -43,25 +43,25 @@
         const loadOrder = [];
     </script>
     
-    <script src="auth.js"></script>
+    <script src="./auth.js"></script>
     <script>
         console.log('✅ auth.js loaded');
         loadOrder.push('auth.js - ' + (typeof Auth !== 'undefined' ? 'SUCCESS' : 'FAILED'));
     </script>
     
-    <script src="favorites.js"></script>
+    <script src="./favorites.js"></script>
     <script>
         console.log('✅ favorites.js loaded');
         loadOrder.push('favorites.js - ' + (typeof Favorites !== 'undefined' ? 'SUCCESS' : 'FAILED'));
     </script>
     
-    <script src="search.js"></script>
+    <script src="./search.js"></script>
     <script>
         console.log('✅ search.js loaded');
         loadOrder.push('search.js - ' + (typeof Search !== 'undefined' ? 'SUCCESS' : 'FAILED'));
     </script>
     
-    <script src="script.js"></script>
+    <script src="./script.js"></script>
     <script>
         console.log('✅ script.js loaded');
         loadOrder.push('script.js - ' + (typeof App !== 'undefined' ? 'SUCCESS' : 'FAILED'));
