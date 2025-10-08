@@ -1,6 +1,7 @@
 [build]
+  base = "."
   publish = "frontend/public"
-  command = "npm run build --workspace=frontend" # Assuming you have a build script in frontend/package.json
+  # command = "npm run build --workspace=frontend" # Removed as frontend is static
 
 [[redirects]]
   from = "/"
