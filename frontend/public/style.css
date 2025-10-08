@@ -466,7 +466,7 @@ a:hover {
   position: absolute;
   top: var(--spacing-sm);
   left: var(--spacing-sm);
-  background: rgba(255, 255, 255, 0.9);
+  background: rgba(135, 75, 233, 0.9);
   border: none;
   border-radius: 50%;
   width: 32px;
