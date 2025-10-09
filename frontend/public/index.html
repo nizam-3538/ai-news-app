@@ -385,9 +385,17 @@
             initializeGoogleOAuth();
             
             // Redirect if already logged in
-            const currentUser = localStorage.getItem('currentUser');
-            if (currentUser) {
-                window.location.href = 'main.html';
+            const currentUserString = localStorage.getItem('currentUser');
+            if (currentUserString) {
+                try {
+                    const currentUser = JSON.parse(currentUserString);
+                    if (currentUser && currentUser.username && currentUser.email) { // Check for valid user object properties
+                        window.location.href = 'main.html';
+                    }
+                } catch (e) {
+                    console.error('Error parsing currentUser from localStorage:', e);
+                    localStorage.removeItem('currentUser'); // Clear invalid data
+                }
             }
             
             // Focus email input

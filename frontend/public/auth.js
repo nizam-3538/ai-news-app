@@ -17,7 +17,8 @@ const Auth = {
   // Initialize authentication
   init() {
     console.log('🔐 Auth module initialized');
-    // Force a dummy login for direct dashboard access
+    // Removed: Force a dummy login for direct dashboard access
+    /*
     this.setCurrentUser({
       id: 'dummy-user-id',
       username: 'GuestUser',
@@ -25,6 +26,7 @@ const Auth = {
       createdAt: new Date().toISOString(),
       lastLogin: new Date().toISOString()
     }, 'dummy-token', true); // 'true' for rememberMe to keep it persistent
+    */
     this.updateUI();
   },
   
@@ -325,7 +327,7 @@ const Auth = {
   
   /**
    * Get user's favorite articles
-   * @returns {Promise<Object>} Result object with favorites data
+   * @returns {Promise<Object} Result object with favorites data
    */
   async getFavorites() {
     const currentUser = this.getCurrentUser();
