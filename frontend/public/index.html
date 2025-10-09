@@ -370,22 +370,7 @@
                     } else {
                         showStatusMessage(result.error || 'Login failed. Please try again.');
                     }
-                } else {
-                    // Fallback for demo purposes
-                    if (email === 'demo@example.com' && password === 'Demo123!') {
-                        localStorage.setItem('currentUser', JSON.stringify({
-                            email: email,
-                            username: 'Demo User',
-                            loginTime: new Date().toISOString()
-                        }));
-                        showStatusMessage('Login successful! Redirecting...', 'success');
-                        setTimeout(() => {
-                            window.location.href = 'main.html';
-                        }, 1000);
-                    } else {
-                        showStatusMessage('Invalid credentials. Try demo@example.com / Demo123!');
-                    }
-                }
+                } 
             } catch (error) {
                 console.error('Login error:', error);
                 showStatusMessage('Login failed. Please check your connection and try again.');
