@@ -165,14 +165,14 @@ a:hover {
 
 /* Header buttons styling */
 .btn-outline-secondary {
-  color: white !important;
-  border-color: rgba(255, 255, 255, 0.3) !important;
+  color: var(--primary-color);
+  border-color: var(--primary-color);
 }
 
 .btn-outline-secondary:hover {
-  background-color: rgba(255, 255, 255, 0.1) !important;
-  border-color: rgba(255, 255, 255, 0.5) !important;
-  color: white !important;
+  background-color: var(--primary-hover);
+  border-color: var(--primary-hover);
+  color: var(--text-light);
 }
 
 .btn-secondary, .btn-primary {
