@@ -347,22 +347,28 @@ async function processWithConcurrencyLimit(tasks, maxConcurrency = 3) {
  * @param {number} maxConcurrency - Maximum number of concurrent requests (default: from env or 3)
  * @returns {Promise<Array>} Combined and normalized articles from all sources
  */
-async function fetchAllNews(query = '', totalLimit = 100, maxConcurrency = 3) {
+async function fetchAllNews(query = '', totalLimit = 200, maxConcurrency = 4) {
   const tasks = [];
   
+  const enabledApis = ['rss', ...Object.keys(NEWS_APIS).filter(api => NEWS_APIS[api].enabled)];
+  const limitPerApi = Math.floor(totalLimit / enabledApis.length) || 20;
+
+  // Add RSS feeds task
+  tasks.push(() => fetchAllFeeds(undefined, 20, limitPerApi));
+
   // Add NewsAPI task if enabled
   if (NEWS_APIS.newsapi.enabled) {
-    tasks.push(() => fetchFromNewsAPI(query, Math.floor(totalLimit / 3)));
+    tasks.push(() => fetchFromNewsAPI(query, limitPerApi));
   }
   
   // Add GNews API task if enabled
   if (NEWS_APIS.gnews.enabled) {
-    tasks.push(() => fetchFromGNews(query, Math.floor(totalLimit / 3)));
+    tasks.push(() => fetchFromGNews(query, limitPerApi));
   }
   
   // Add NewsData.io API task if enabled
   if (NEWS_APIS.newsdata.enabled) {
-    tasks.push(() => fetchFromNewsData(query, Math.floor(totalLimit / 3)));
+    tasks.push(() => fetchFromNewsData(query, limitPerApi));
   }
   
   // Execute all tasks with limited concurrency
@@ -405,7 +411,7 @@ async function fetchAllNews(query = '', totalLimit = 100, maxConcurrency = 3) {
  */
 router.get('/', async (req, res) => {
   const query = req.query.q || '';
-  const limit = Math.min(parseInt(req.query.limit) || 100, 100);
+  const limit = Math.min(parseInt(req.query.limit) || 200, 200);
   const sources = req.query.sources ? req.query.sources.split(',') : [];
   const excludeSources = req.query.excludeSources ? req.query.excludeSources.split(',') : [];
   const category = req.query.category || '';
@@ -417,22 +423,7 @@ router.get('/', async (req, res) => {
   
   try {
     // Fetch all news with limited concurrency
-    let articles = await fetchAllNews(query, limit, 3);
-    
-    // If no articles from APIs, fallback to RSS feeds
-    if (articles.length === 0) {
-      console.log('No articles from APIs, falling back to RSS feeds...');
-      try {
-        const rssArticles = await fetchAllFeeds();
-        console.log(`RSS returned ${rssArticles.length} articles`);
-        
-        // RSS articles are already normalized, just use them directly
-        articles = rssArticles;
-        console.log(`Using ${articles.length} articles from RSS feeds as fallback`);
-      } catch (rssError) {
-        console.error('RSS fallback also failed:', rssError.message);
-      }
-    }
+    let articles = await fetchAllNews(query, limit, 4);
     
     console.log(`Articles before filtering: ${articles.length}`);
     
