@@ -49,16 +49,6 @@
                         <a href="main.html" class="btn btn-primary mt-3">Back to Home</a>
                     </div>
                 </div>
-
-                <!-- BOT Response Container -->
-                <div id="bot-response-area" class="card mt-4 d-none">
-                    <div class="card-header">
-                        <h5 class="mb-0">AI Assistant Response</h5>
-                    </div>
-                    <div class="card-body" id="bot-response-content">
-                        <!-- Bot response will be injected here -->
-                    </div>
-                </div>
             </div>
             
             <!-- Chatbot Sidebar -->
@@ -192,19 +182,6 @@
             }
 
             showTypingIndicator(true);
-
-            const botResponseArea = document.getElementById('bot-response-area');
-            const botResponseContent = document.getElementById('bot-response-content');
-
-            // Show loading indicator in the new container
-            botResponseContent.innerHTML = `
-                <div class="d-flex justify-content-center">
-                    <div class="spinner-border" role="status">
-                        <span class="visually-hidden">Loading...</span>
-                    </div>
-                </div>
-            `;
-            botResponseArea.classList.remove('d-none');
             
             try {
                 // Call the real AI API
@@ -225,14 +202,10 @@
                 showTypingIndicator(false);
 
                 if (data.ok && data.answer) {
-                    const sanitizedAnswer = sanitizeHTML(data.answer);
-                    botResponseContent.innerHTML = `<p>${sanitizedAnswer}</p>`;
                     addChatMessage(data.answer, false);
                     chatHistory.push({ role: 'assistant', content: data.answer });
                 } else {
                     const errorMessage = "I'm sorry, I couldn't process that question right now. Please try asking something else.";
-                    const sanitizedErrorMessage = sanitizeHTML(errorMessage);
-                    botResponseContent.innerHTML = `<p class="text-danger">${sanitizedErrorMessage}</p>`;
                     addChatMessage(errorMessage, false);
                 }
                 
@@ -240,8 +213,6 @@
                 console.error('AI API Error:', error);
                 showTypingIndicator(false);
                 const errorMessage = "I'm experiencing some technical difficulties. Please try again in a moment.";
-                const sanitizedErrorMessage = sanitizeHTML(errorMessage);
-                botResponseContent.innerHTML = `<p class="text-danger">${sanitizedErrorMessage}</p>`;
                 addChatMessage(errorMessage, false);
             }
         }
@@ -259,7 +230,7 @@
             const starters = [
                 "\n\nYou could ask me:",
                 "• What's the main story here?",
-                "• Why is this news important?", 
+                "• Why is this news important? ", 
                 "• Who are the key people involved?",
                 "• What are the implications?"
             ];
@@ -421,7 +392,7 @@
                             <div class="text-center">
                                 <img src="${articleImage}" 
                                      alt="Article image" 
-                                     class="img-fluid rounded shadow" 
+                                     class="img-fluid rounded shadow"
                                      style="max-height: 400px; width: auto; object-fit: cover;"
                                      onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
                                 <div class="alert alert-light text-muted" style="display: none;">
