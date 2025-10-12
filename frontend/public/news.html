@@ -49,6 +49,16 @@
                         <a href="main.html" class="btn btn-primary mt-3">Back to Home</a>
                     </div>
                 </div>
+
+                <!-- BOT Response Container -->
+                <div id="bot-response-area" class="card mt-4 d-none">
+                    <div class="card-header">
+                        <h5 class="mb-0">AI Assistant Response</h5>
+                    </div>
+                    <div class="card-body" id="bot-response-content">
+                        <!-- Bot response will be injected here -->
+                    </div>
+                </div>
             </div>
             
             <!-- Chatbot Sidebar -->
@@ -117,6 +127,12 @@
         let currentArticle = null;
         let chatHistory = [];
 
+        function sanitizeHTML(str) {
+            const temp = document.createElement('div');
+            temp.textContent = str;
+            return temp.innerHTML;
+        }
+
         // This script runs on news.html - its job is to get the ID from URL and display the article
         
         function getArticleId() {
@@ -150,6 +166,7 @@
             messageDiv.className = `chat-message ${isUser ? 'user-message' : 'bot-message'} mb-2`;
             
             const timestamp = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            const sanitizedMessage = sanitizeHTML(message);
             
             messageDiv.innerHTML = `
                 <div class="d-flex ${isUser ? 'justify-content-end' : ''}">
@@ -157,7 +174,7 @@
                     <div class="flex-grow-1 ${isUser ? 'text-end' : ''}">
                         <small class="text-muted">${timestamp}</small>
                         <div class="p-2 rounded ${isUser ? 'bg-light ms-5' : 'bg-white'}">
-                            <p class="mb-0">${message}</p>
+                            <p class="mb-0">${sanitizedMessage}</p>
                         </div>
                     </div>
                     ${isUser ? '<div class="badge bg-secondary rounded-pill ms-2">You</div>' : ''}
@@ -173,27 +190,21 @@
                 addChatMessage("I need an article to be loaded first before I can help you analyze it.", false);
                 return;
             }
-            
-            // Show typing indicator
-            const typingDiv = document.createElement('div');
-            typingDiv.id = 'typing-indicator';
-            typingDiv.className = 'chat-message bot-message mb-2';
-            typingDiv.innerHTML = `
-                <div class="d-flex">
-                    <div class="badge bg-primary rounded-pill me-2">AI</div>
-                    <div class="flex-grow-1">
-                        <div class="p-2 rounded bg-white">
-                            <div class="typing-dots">
-                                <span></span><span></span><span></span>
-                            </div>
-                        </div>
+
+            showTypingIndicator(true);
+
+            const botResponseArea = document.getElementById('bot-response-area');
+            const botResponseContent = document.getElementById('bot-response-content');
+
+            // Show loading indicator in the new container
+            botResponseContent.innerHTML = `
+                <div class="d-flex justify-content-center">
+                    <div class="spinner-border" role="status">
+                        <span class="visually-hidden">Loading...</span>
                     </div>
                 </div>
             `;
-            
-            const chatMessages = document.getElementById('chatMessages');
-            chatMessages.appendChild(typingDiv);
-            chatMessages.scrollTop = chatMessages.scrollHeight;
+            botResponseArea.classList.remove('d-none');
             
             try {
                 // Call the real AI API
@@ -203,30 +214,35 @@
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        text: `Title: ${currentArticle.title}
-
-Summary: ${currentArticle.summary}
-
-Content: ${currentArticle.content}`,
-                        question: userMessage
+                        text: `Title: ${currentArticle.title}\n\nSummary: ${currentArticle.summary}\n\nContent: ${currentArticle.content}`,
+                        question: userMessage,
+                        history: chatHistory
                     })
                 });
                 
                 const data = await response.json();
                 
-                // Remove typing indicator
-                document.getElementById('typing-indicator')?.remove();
-                
+                showTypingIndicator(false);
+
                 if (data.ok && data.answer) {
+                    const sanitizedAnswer = sanitizeHTML(data.answer);
+                    botResponseContent.innerHTML = `<p>${sanitizedAnswer}</p>`;
                     addChatMessage(data.answer, false);
+                    chatHistory.push({ role: 'assistant', content: data.answer });
                 } else {
-                    addChatMessage("I'm sorry, I couldn't process that question right now. Please try asking something else.", false);
+                    const errorMessage = "I'm sorry, I couldn't process that question right now. Please try asking something else.";
+                    const sanitizedErrorMessage = sanitizeHTML(errorMessage);
+                    botResponseContent.innerHTML = `<p class="text-danger">${sanitizedErrorMessage}</p>`;
+                    addChatMessage(errorMessage, false);
                 }
                 
             } catch (error) {
                 console.error('AI API Error:', error);
-                document.getElementById('typing-indicator')?.remove();
-                addChatMessage("I'm experiencing some technical difficulties. Please try again in a moment.", false);
+                showTypingIndicator(false);
+                const errorMessage = "I'm experiencing some technical difficulties. Please try again in a moment.";
+                const sanitizedErrorMessage = sanitizeHTML(errorMessage);
+                botResponseContent.innerHTML = `<p class="text-danger">${sanitizedErrorMessage}</p>`;
+                addChatMessage(errorMessage, false);
             }
         }
         
@@ -253,6 +269,7 @@ Content: ${currentArticle.content}`,
             
             setTimeout(() => {
                 addChatMessage(fullResponse, false);
+                chatHistory.push({ role: 'assistant', content: fullResponse });
             }, 500);
         }
         
@@ -272,12 +289,46 @@ Content: ${currentArticle.content}`,
             return false;
         }
 
+        function showTypingIndicator(show) {
+            const chatMessages = document.getElementById('chatMessages');
+            let typingIndicator = document.getElementById('typing-indicator');
+
+            if (show) {
+                if (!typingIndicator) {
+                    typingIndicator = document.createElement('div');
+                    typingIndicator.id = 'typing-indicator';
+                    typingIndicator.className = 'chat-message bot-message mb-2';
+                    typingIndicator.innerHTML = `
+                        <div class="d-flex">
+                            <div class="badge bg-primary rounded-pill me-2">AI</div>
+                            <div class="flex-grow-1">
+                                <div class="p-2 rounded bg-white">
+                                    <div class="typing-dots">
+                                        <span></span>
+                                        <span></span>
+                                        <span></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    chatMessages.appendChild(typingIndicator);
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                }
+            } else {
+                if (typingIndicator) {
+                    typingIndicator.remove();
+                }
+    }
+}
+
         function sendChatMessage() {
             const chatInput = document.getElementById('chatInput');
             const message = chatInput.value.trim();
             
             if (message) {
                 addChatMessage(message, true);
+                chatHistory.push({ role: 'user', content: message });
                 chatInput.value = '';
                 
                 // Check if it's a greeting
@@ -324,23 +375,29 @@ Content: ${currentArticle.content}`,
                               article.originalItem.image || 
                               article.originalItem.image_url;
             }
+
+            const sanitizedTitle = sanitizeHTML(article.title);
+            const sanitizedSource = sanitizeHTML(article.source);
+            const sanitizedAuthor = sanitizeHTML(article.author);
+            const sanitizedSummary = sanitizeHTML(article.summary);
+            const sanitizedDisplayContent = sanitizeHTML(displayContent);
             
             contentDiv.innerHTML = `
                 <div class="card-header">
-                    <h1 class="card-title mb-0">${article.title}</h1>
+                    <h1 class="card-title mb-0">${sanitizedTitle}</h1>
                 </div>
                 <div class="card-body">
                     <div class="row mb-3">
                         <div class="col-md-6">
                             <small class="text-muted">
                                 <i class="bi bi-building me-1"></i>
-                                <strong>Source:</strong> ${article.source}
+                                <strong>Source:</strong> ${sanitizedSource}
                             </small>
                         </div>
                         <div class="col-md-6">
                             <small class="text-muted">
                                 <i class="bi bi-person me-1"></i>
-                                <strong>Author:</strong> ${article.author}
+                                <strong>Author:</strong> ${sanitizedAuthor}
                             </small>
                         </div>
                     </div>
@@ -380,7 +437,7 @@ Content: ${currentArticle.content}`,
                             <i class="bi bi-info-circle me-2"></i>
                             Summary
                         </h5>
-                        <p class="mb-0">${article.summary}</p>
+                        <p class="mb-0">${sanitizedSummary}</p>
                     </div>
                     
                     <div class="mb-4">
@@ -389,7 +446,7 @@ Content: ${currentArticle.content}`,
                             Content
                         </h5>
                         <div class="content-container">
-                            <div class="content-text" id="articleContent">${displayContent}</div>
+                            <div class="content-text" id="articleContent">${sanitizedDisplayContent}</div>
                             ${shouldTruncate ? `
                                 <div class="text-center mt-3">
                                     <button class="btn btn-outline-primary btn-sm" id="toggleContent">
@@ -423,11 +480,11 @@ Content: ${currentArticle.content}`,
                 
                 toggleBtn.addEventListener('click', function() {
                     if (isExpanded) {
-                        contentDiv.innerHTML = article.content.substring(0, 500) + '...';
+                        contentDiv.innerHTML = sanitizeHTML(article.content.substring(0, 500) + '...');
                         toggleBtn.innerHTML = '<i class="bi bi-chevron-down me-1"></i>Show Full Content';
                         isExpanded = false;
                     } else {
-                        contentDiv.innerHTML = article.content;
+                        contentDiv.innerHTML = sanitizeHTML(article.content);
                         toggleBtn.innerHTML = '<i class="bi bi-chevron-up me-1"></i>Show Less';
                         isExpanded = true;
                     }
