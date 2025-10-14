@@ -5,7 +5,7 @@
 
 const App = {
   // Configuration
-  API_BASE_URL: 'https://ai-news-app-backend.vercel.app', // Update for production
+  API_BASE_URL: 'https://ai-news-app-backend.vercel.app',
   
   // State
   articles: [],
