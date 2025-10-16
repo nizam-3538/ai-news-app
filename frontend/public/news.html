@@ -538,7 +538,7 @@
         }
 
         function showInitialGreeting() {
-            const initialMessage = "Hi! I'm your AI news assistant. I can help you understand this article, answer questions about the content, or discuss related topics. Try asking me:<ul class='mb-0 mt-2'><li>'What is this article about?'</li><li>'Can you summarize the key points?'</li><li>'Why is this news significant?'</li><li>'Who was involved in this story?'</li></ul><p class='mb-0 mt-2'>What would you like to know?</p>";
+            const initialMessage = "Hi! I'm your AI news assistant. I can help you understand this article, answer questions about the content, or discuss related topics. Try asking me:  <br> 'What is this article about?'  'Can you summarize the key points?'  'Why is this news significant?'  'Who was involved in this story?'  What would you like to know?";
             addChatMessage(initialMessage, false);
             chatHistory.push({ role: 'assistant', content: initialMessage });
         }
