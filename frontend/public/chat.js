@@ -1,4 +1,3 @@
-
 /**
  * Chat module for AI News Aggregator
  * Handles chat UI, user input, and communication with the backend chatbot.
