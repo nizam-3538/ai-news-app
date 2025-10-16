@@ -71,22 +71,6 @@
                     <div class="card-body d-flex flex-column" style="height: 600px;">
                         <!-- Chat Messages -->
                         <div id="chatMessages" class="flex-grow-1 overflow-auto mb-3 border rounded p-3" style="background-color: #f8f9fa;">
-                            <div class="chat-message bot-message mb-2">
-                                <div class="d-flex">
-                                    <div class="badge bg-primary rounded-pill me-2">AI</div>
-                                    <div class="flex-grow-1">
-                                        <small class="text-muted">Just now</small>
-                                        <p class="mb-0">Hi! I'm your AI news assistant. I can help you understand this article, answer questions about the content, or discuss related topics. Try asking me:</p>
-                                        <ul class="mb-0 mt-2">
-                                            <li>"What is this article about?"</li>
-                                            <li>"Can you summarize the key points?"</li>
-                                            <li>"Why is this news significant?"</li>
-                                            <li>"Who was involved in this story?"</li>
-                                        </ul>
-                                        <p class="mb-0 mt-2">What would you like to know?</p>
-                                    </div>
-                                </div>
-                            </div>
                         </div>
                         
                         <!-- Chat Input -->
@@ -553,6 +537,12 @@
             }
         }
 
+        function showInitialGreeting() {
+            const initialMessage = "Hi! I'm your AI news assistant. I can help you understand this article, answer questions about the content, or discuss related topics. Try asking me:<ul class='mb-0 mt-2'><li>'What is this article about?'</li><li>'Can you summarize the key points?'</li><li>'Why is this news significant?'</li><li>'Who was involved in this story?'</li></ul><p class='mb-0 mt-2'>What would you like to know?</p>";
+            addChatMessage(initialMessage, false);
+            chatHistory.push({ role: 'assistant', content: initialMessage });
+        }
+
         // Main execution when page loads
         document.addEventListener('DOMContentLoaded', async () => {
             // GET the index from the URL now that we are on the new page
@@ -565,6 +555,7 @@
                     // Load article from backend using the index
                     const article = await loadArticleFromBackend(articleIndex);
                     displayArticle(article);
+                    showInitialGreeting();
                 } catch (error) {
                     showError(error.message || 'Failed to load article');
                 }
