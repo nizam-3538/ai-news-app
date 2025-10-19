@@ -107,6 +107,7 @@
     <script>
         // Global variables
         let currentArticle = null;
+        let originalArticleData = null; // To store the pristine, untranslated article
         let chatHistory = [];
 
         function sanitizeHTML(str) {
@@ -332,6 +333,7 @@
 
         function displayArticle(article) {
             currentArticle = article; // Store for chatbot
+            if (!originalArticleData) originalArticleData = { ...article }; // Store the original on first load
             const contentDiv = document.getElementById('article-content');
             
             // Determine if content should be initially truncated
@@ -573,19 +575,12 @@
 
                         if (lang === 'English') {
                             // Revert to original by re-fetching and re-displaying
-                            try {
-                                const originalArticle = await loadArticleFromBackend(getArticleId());
-                                displayArticle(originalArticle); // This re-renders everything
-                            } catch (error) {
-                                alert('Could not revert to the original article. Please refresh the page.');
-                                translateButton.disabled = false;
-                                translationSpinner.classList.add('d-none');
-                            }
+                            displayArticle(originalArticleData); // Use the stored original data
                             return;
                         }
 
                         try {
-                            const textToTranslate = `Title: ${currentArticle.title}\n\nSummary: ${currentArticle.summary}\n\nContent: ${currentArticle.content}`;
+                            const textToTranslate = `Title: ${originalArticleData.title}\n\nSummary: ${originalArticleData.summary}\n\nContent: ${originalArticleData.content}`;
                             
                             const response = await fetch('https://ai-news-app-backend.vercel.app/analyze/translate', {
                                 method: 'POST',
@@ -597,10 +592,10 @@
 
                             if (data.ok && data.translation) {
                                 const translated = data.translation;
-                                const translatedArticle = { ...currentArticle }; // Keep original data like images
-                                translatedArticle.title = translated.title || currentArticle.title;
-                                translatedArticle.summary = translated.summary || currentArticle.summary;
-                                translatedArticle.content = translated.content || currentArticle.content;
+                                const translatedArticle = { ...originalArticleData }; // Start from original
+                                translatedArticle.title = translated.title || originalArticleData.title;
+                                translatedArticle.summary = translated.summary || originalArticleData.summary;
+                                translatedArticle.content = translated.content || originalArticleData.content;
                                 
                                 // Re-display the article with translated content, which also re-attaches listeners
                                 displayArticle(translatedArticle);
@@ -611,6 +606,9 @@
                         } catch (error) {
                             console.error('Translation error:', error);
                             alert(`Sorry, I couldn't translate the article to ${lang}. Please try again. Error: ${error.message}`);
+                            // Re-enable button on failure
+                            translateButton.disabled = false;
+                            translationSpinner.classList.add('d-none');
                         }
                     });
                 });
