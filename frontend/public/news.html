@@ -576,19 +576,18 @@
 
                         try {
                             const textToTranslate = `Title: ${currentArticle.title}\n\nSummary: ${currentArticle.summary}\n\nContent: ${currentArticle.content}`;
-                            const question = `Translate the following article text to ${lang}. Respond with ONLY the translated text in a JSON object with "title", "summary", and "content" keys. For example: {"title": "...", "summary": "...", "content": "..."}`;
-
-                            const response = await fetch('https://ai-news-app-backend.vercel.app/analyze', {
+                            
+                            const response = await fetch('https://ai-news-app-backend.vercel.app/analyze/translate', {
                                 method: 'POST',
                                 headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({ text: textToTranslate, question: question })
+                                body: JSON.stringify({ text: textToTranslate, language: lang })
                             });
 
                             const data = await response.json();
 
-                            if (data.ok && data.answer) {
-                                // The AI response should be a JSON string.
-                                const translated = JSON.parse(data.answer);
+                            if (data.ok && data.translation) {
+                                // The backend now guarantees the 'translation' field is a parsed JSON object.
+                                const translated = data.translation;
                                 const translatedArticle = { ...currentArticle };
                                 translatedArticle.title = translated.title || currentArticle.title;
                                 translatedArticle.summary = translated.summary || currentArticle.summary;
