@@ -554,66 +554,6 @@
                     updateButtonState();
                 });
             }
-
-            // Add event listener for translation
-            const translateButton = document.getElementById('translate-button');
-            const translationSpinner = document.getElementById('translation-spinner');
-            if (translateButton) {
-                document.querySelectorAll('.dropdown-item[data-lang]').forEach(item => {
-                    item.addEventListener('click', async (e) => {
-                        e.preventDefault();
-                        const lang = e.target.getAttribute('data-lang');
-                        translateButton.disabled = true;
-                        translationSpinner.classList.remove('d-none');
-
-                        if (lang === 'English') {
-                            // Revert to original
-                            displayArticle(currentArticle);
-                            translateButton.disabled = false;
-                            translationSpinner.classList.add('d-none');
-                            return;
-                        }
-
-                        try {
-                            const textToTranslate = `Title: ${currentArticle.title}\n\nSummary: ${currentArticle.summary}\n\nContent: ${currentArticle.content}`;
-                            
-                            const response = await fetch('https://ai-news-app-backend.vercel.app/analyze/translate', {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({ text: textToTranslate, language: lang })
-                            });
-
-                            const data = await response.json();
-
-                            if (data.ok && data.translation) {
-                                // The backend now guarantees the 'translation' field is a parsed JSON object.
-                                const translated = data.translation;
-                                const translatedArticle = { ...currentArticle };
-                                translatedArticle.title = translated.title || currentArticle.title;
-                                translatedArticle.summary = translated.summary || currentArticle.summary;
-                                translatedArticle.content = translated.content || currentArticle.content;
-                                
-                                // Re-display the article with translated content
-                                displayArticle(translatedArticle);
-                                document.querySelector('.card-title').innerHTML += ` <span class="badge bg-info text-dark">(${lang})</span>`;
-                            } else {
-                                throw new Error('Failed to get translation from AI.');
-                            }
-                        } catch (error) {
-                            console.error('Translation error:', error);
-                            alert(`Sorry, I couldn't translate the article to ${lang}. Please try again.`);
-                        } finally {
-                            translateButton.disabled = false;
-                            translationSpinner.classList.add('d-none');
-                        }
-                    });
-                });
-            }
-
-            // Bootstrap dropdown initialization
-            if (typeof bootstrap !== 'undefined') {
-                new bootstrap.Dropdown(translateButton);
-            }
         }
 
         function showInitialGreeting() {
