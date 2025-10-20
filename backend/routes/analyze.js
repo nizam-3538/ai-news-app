@@ -72,10 +72,9 @@ router.post('/translate', async (req, res, next) => {
 
     // Construct a very specific prompt for the AI
     const question = `Translate the following article text to ${language}.
-The text to translate is provided below, starting with "---TEXT---".
 Your response MUST be a valid JSON object with three keys: "title", "summary", and "content".
 Do not include any other text, explanations, or markdown formatting like \`\`\`json.
-The JSON object should look like this: {"title": "...", "summary": "...", "content": "..."}
+The JSON object should look exactly like this: {"title": "...", "summary": "...", "content": "..."}
 
 ---TEXT---
 ${text}`;
@@ -84,16 +83,26 @@ ${text}`;
     const analysisResult = await getAIResponse('', question);
 
     // Attempt to parse the AI's answer to ensure it's valid JSON
+    let translatedContent;
     try {
-      const translatedContent = JSON.parse(analysisResult.answer);
+      // Attempt to extract JSON from potentially malformed AI response
+      const jsonMatch = analysisResult.answer.match(/```json\n([\s\S]*?)\n```/);
+      const rawJson = jsonMatch ? jsonMatch[1] : analysisResult.answer;
+      translatedContent = JSON.parse(rawJson);
+
+      // Basic validation of the JSON structure
+      if (!translatedContent || typeof translatedContent.title === 'undefined' || typeof translatedContent.summary === 'undefined' || typeof translatedContent.content === 'undefined') {
+        throw new Error('Translated JSON is missing required fields.');
+      }
+
       res.json({
         ok: true,
         translation: translatedContent,
         meta: analysisResult.meta,
       });
     } catch (parseError) {
-      console.error('AI did not return valid JSON for translation:', analysisResult.answer);
-      throw new Error('Translation service failed to return a valid format.');
+      console.error('AI did not return valid JSON for translation or parsing failed:', analysisResult.answer, parseError);
+      throw new Error('Translation service failed to return a valid format or AI response was malformed.');
     }
   } catch (error) {
     console.error('Error in POST /analyze/translate:', error.message);

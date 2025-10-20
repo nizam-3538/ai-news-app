@@ -570,12 +570,17 @@
                     item.addEventListener('click', async (e) => {
                         e.preventDefault();
                         const lang = e.target.getAttribute('data-lang');
+                        
+                        // Disable button and show spinner
                         translateButton.disabled = true;
                         translationSpinner.classList.remove('d-none');
 
                         if (lang === 'English') {
-                            // Revert to original by re-fetching and re-displaying
+                            // Revert to original by re-displaying
                             displayArticle(originalArticleData); // Use the stored original data
+                            // Re-enable button and hide spinner
+                            translateButton.disabled = false;
+                            translationSpinner.classList.add('d-none');
                             return;
                         }
 
@@ -606,7 +611,8 @@
                         } catch (error) {
                             console.error('Translation error:', error);
                             alert(`Sorry, I couldn't translate the article to ${lang}. Please try again. Error: ${error.message}`);
-                            // Re-enable button on failure
+                        } finally {
+                            // Always re-enable button and hide spinner
                             translateButton.disabled = false;
                             translationSpinner.classList.add('d-none');
                         }
