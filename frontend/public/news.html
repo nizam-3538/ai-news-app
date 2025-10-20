@@ -524,6 +524,8 @@
                 });
             }
 
+            setupActionButtonsListeners(); // Moved here to ensure it runs after the article is displayed
+
             // Add event listeners for share and favorite buttons
             const shareButton = document.getElementById('share-button');
             if (shareButton) {
@@ -576,8 +578,63 @@
                     updateButtonState();
                 });
             }
+        }
 
-            // Add event listener for translation
+        function setupActionButtonsListeners() {
+            const shareButton = document.getElementById('share-button');
+            if (shareButton) {
+                shareButton.addEventListener('click', () => {
+                    if (navigator.share) {
+                        navigator.share({
+                            title: currentArticle.title,
+                            text: currentArticle.summary,
+                            url: window.location.href,
+                        })
+                        .then(() => console.log('Successful share'))
+                        .catch((error) => console.log('Error sharing', error));
+                    } else {
+                        // Fallback for browsers that don't support navigator.share
+                        navigator.clipboard.writeText(window.location.href).then(() => {
+                            alert('Link copied to clipboard!');
+                        }).catch(err => {
+                            console.error('Could not copy text: ', err);
+                            alert('Failed to copy link.');
+                        });
+                    }
+                });
+            }
+
+            const favoriteButton = document.getElementById('favorite-button');
+            if (favoriteButton && currentArticle && currentArticle.id) {
+                let isFavorited = Favorites.isFavorited(currentArticle.id);
+
+                const updateButtonState = () => {
+                    if (isFavorited) {
+                        favoriteButton.innerHTML = '<i class="bi bi-heart-fill"></i> Favorited';
+                        favoriteButton.classList.remove('btn-outline-danger');
+                        favoriteButton.classList.add('btn-danger');
+                    } else {
+                        favoriteButton.innerHTML = '<i class="bi bi-heart"></i> Add to Favorites';
+                        favoriteButton.classList.remove('btn-danger');
+                        favoriteButton.classList.add('btn-outline-danger');
+                    }
+                };
+
+                updateButtonState();
+
+                favoriteButton.addEventListener('click', async () => {
+                    if (isFavorited) {
+                        await Favorites.removeFavorite(currentArticle.id);
+                    } else {
+                        await Favorites.addFavorite(currentArticle);
+                    }
+                    isFavorited = !isFavorited;
+                    updateButtonState();
+                });
+            }
+        }
+
+        function setupTranslationListeners() {
             const translateButton = document.getElementById('translate-button');
             const translationSpinner = document.getElementById('translation-spinner');
             if (translateButton) {
@@ -659,6 +716,8 @@
                     // Load article from backend using the index
                     const article = await loadArticleFromBackend(articleIndex);
                     displayArticle(article);
+                    setupActionButtonsListeners(); // Call once after article is displayed
+                    setupTranslationListeners(); // Call here to attach listeners after article is displayed
                     showInitialGreeting();
                 } catch (error) {
                     showError(error.message || 'Failed to load article');
