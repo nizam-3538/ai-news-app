@@ -221,6 +221,10 @@
         // Initialize theme immediately (before DOM load)
         initializeTheme();
 
+        // --- Global function to render news cards (can be used by script.js or fallback) ---
+        // This function is made global so that external scripts (like script.js) can utilize it
+        // to render news items consistently with the Local/Global tags.
+        // It's also used in the fallback if App.init() is not defined.
         // --- Article Card Creation ---
         // This function is likely in an external script, but for this change,
         // we'll define it here to add the new "Local/Global" tag.
@@ -260,6 +264,38 @@
             return card;
         }
         
+        // Fallback function to load and display news if App.init() is not available
+        async function fallbackLoadAndDisplayNews() {
+            const newsList = document.getElementById('newsList');
+            const loadingState = document.getElementById('loadingState');
+            const errorState = document.getElementById('errorState');
+            const emptyState = document.getElementById('emptyState');
+
+            if (loadingState) loadingState.classList.remove('hidden');
+            if (errorState) errorState.classList.add('hidden');
+            if (emptyState) emptyState.classList.add('hidden');
+            if (newsList) newsList.innerHTML = ''; // Clear previous news
+
+            try {
+                // Fetch news data from the backend
+                const response = await fetch('https://ai-news-app-backend.vercel.app/news');
+                const data = await response.json();
+
+                if (data.success && data.articles && data.articles.length > 0) {
+                    data.articles.forEach(article => {
+                        const card = createArticleCard(article);
+                        newsList.appendChild(card);
+                    });
+                } else {
+                    if (emptyState) emptyState.classList.remove('hidden');
+                }
+            } catch (error) {
+                if (errorState) errorState.classList.remove('hidden');
+            } finally {
+                if (loadingState) loadingState.classList.add('hidden');
+            }
+        }
+
         // Initialize the application when DOM is loaded
         document.addEventListener('DOMContentLoaded', function() {
             // Setup theme toggle
@@ -339,6 +375,8 @@
                         }
                     });
                 }
+                // If App.init() is not defined, load news using the fallback
+                fallbackLoadAndDisplayNews();
             }
         });
     </script>
