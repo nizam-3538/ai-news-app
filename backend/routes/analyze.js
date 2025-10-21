@@ -92,6 +92,12 @@ ${text}`;
     let translatedContent;
     try {
       // Attempt to extract JSON from potentially malformed AI response
+      if (typeof analysisResult.answer !== 'string' || !analysisResult.answer.trim()) {
+        console.error('AI returned an empty or invalid (non-string) response for translation.');
+        // Throw a specific error to be caught by the outer catch block
+        throw new Error('Translation service returned an empty or invalid response.');
+      }
+
       const jsonMatch = analysisResult.answer.match(/```json\n([\s\S]*?)\n```/);
       const rawJson = jsonMatch ? jsonMatch[1] : analysisResult.answer;
       translatedContent = JSON.parse(rawJson);
