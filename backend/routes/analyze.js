@@ -1,18 +1,12 @@
 /**
  * AI Analysis routes for AI News Aggregator
- * Handles /analyze and /auth endpoints
+ * Handles /analyze endpoint
  */
 
 const express = require('express');
-const crypto = require('crypto');
 const cache = require('../lib/cache');
 const { analyzeSentiment } = require('../lib/utils');
 const { getAIResponse } = require('../lib/ai');
-const { sendVerificationEmail } = require('../lib/email'); // New email utility
-
-// Mock user database functions for auth (replace with real DB calls)
-const { findUserByEmail, createUser, findTempUserByEmail, saveTempUser, deleteTempUser } = require('../lib/userStore');
-const bcrypt = require('bcryptjs');
 
 const router = express.Router();
 
@@ -92,12 +86,6 @@ ${text}`;
     let translatedContent;
     try {
       // Attempt to extract JSON from potentially malformed AI response
-      if (typeof analysisResult.answer !== 'string' || !analysisResult.answer.trim()) {
-        console.error('AI returned an empty or invalid (non-string) response for translation.');
-        // Throw a specific error to be caught by the outer catch block
-        throw new Error('Translation service returned an empty or invalid response.');
-      }
-
       const jsonMatch = analysisResult.answer.match(/```json\n([\s\S]*?)\n```/);
       const rawJson = jsonMatch ? jsonMatch[1] : analysisResult.answer;
       translatedContent = JSON.parse(rawJson);
@@ -122,122 +110,6 @@ ${text}`;
   }
 });
 
-/**
- * POST /auth/signup - Step 1: Initiate registration and send OTP
- */
-router.post('/signup', async (req, res, next) => {
-    try {
-        const { username, email, password } = req.body;
-
-        // Basic validation
-        if (!username || !email || !password) {
-            return res.status(400).json({ ok: false, error: 'All fields are required' });
-        }
-
-        // Check if user already exists
-        const existingUser = await findUserByEmail(email);
-        if (existingUser) {
-            return res.status(409).json({ ok: false, error: 'An account with this email already exists' });
-        }
-
-        // Generate OTP and expiry
-        const otp = crypto.randomInt(100000, 999999).toString();
-        const otpExpires = Date.now() + 10 * 60 * 1000; // 10 minutes
-        const hashedPassword = await bcrypt.hash(password, 10);
-
-        // Store temporary user data
-        await saveTempUser(email, { username, email, password: hashedPassword, otp, otpExpires });
-
-        // Send verification email
-        await sendVerificationEmail(email, otp);
-
-        res.status(200).json({ ok: true, message: 'OTP sent to your email. Please verify to complete registration.' });
-
-    } catch (error) {
-        console.error('Error in POST /auth/signup:', error.message);
-        next(error);
-    }
-});
-
-/**
- * POST /auth/verify-otp - Step 2: Verify OTP and create user
- */
-router.post('/verify-otp', async (req, res, next) => {
-    try {
-        const { email, otp } = req.body;
-
-        if (!email || !otp) {
-            return res.status(400).json({ ok: false, error: 'Email and OTP are required' });
-        }
-
-        const tempUser = await findTempUserByEmail(email);
-
-        if (!tempUser) {
-            return res.status(400).json({ ok: false, error: 'Invalid request. Please sign up again.' });
-        }
-
-        if (tempUser.otp !== otp) {
-            return res.status(400).json({ ok: false, error: 'Invalid OTP.' });
-        }
-
-        if (Date.now() > tempUser.otpExpires) {
-            return res.status(400).json({ ok: false, error: 'OTP has expired. Please request a new one.' });
-        }
-
-        // OTP is valid, create permanent user
-        const newUser = await createUser({
-            username: tempUser.username,
-            email: tempUser.email,
-            password: tempUser.password,
-        });
-
-        // Clean up temporary data
-        await deleteTempUser(email);
-
-        // In a real app, you would generate a JWT here and log the user in.
-        res.status(201).json({ ok: true, message: 'Account created successfully!', user: { id: newUser.id, username: newUser.username } });
-
-    } catch (error) {
-        console.error('Error in POST /auth/verify-otp:', error.message);
-        next(error);
-    }
-});
-
-/**
- * POST /auth/resend-otp - Resend OTP
- */
-router.post('/resend-otp', async (req, res, next) => {
-    try {
-        const { email } = req.body;
-        if (!email) {
-            return res.status(400).json({ ok: false, error: 'Email is required' });
-        }
-
-        const tempUser = await findTempUserByEmail(email);
-        if (!tempUser) {
-            // To prevent email enumeration, we send a success-like response even if the user doesn't exist.
-            // The message implies an action was taken without confirming the user's existence.
-            return res.status(200).json({ ok: true, message: 'If a registration is pending for this email, a new OTP has been sent.' });
-        }
-
-        // Generate a new OTP and update the expiry
-        const newOtp = crypto.randomInt(100000, 999999).toString();
-        const newOtpExpires = Date.now() + 10 * 60 * 1000; // 10 minutes
-
-        // Update the temporary user data with the new OTP
-        tempUser.otp = newOtp;
-        tempUser.otpExpires = newOtpExpires;
-        await saveTempUser(email, tempUser);
-
-        // Send the new verification email
-        await sendVerificationEmail(email, newOtp);
-
-        res.status(200).json({ ok: true, message: 'A new OTP has been sent to your email.' });
-
-    } catch (error) {
-        console.error('Error in POST /auth/resend-otp:', error.message);
-        next(error);
-    }
-});
+// Note: The /summarize and /health endpoints are kept for now but could be refactored.
 
 module.exports = router;
