@@ -203,14 +203,30 @@ router.post('/verify-otp', async (req, res, next) => {
 router.post('/resend-otp', async (req, res, next) => {
     try {
         const { email } = req.body;
-        // This is a simplified version. A production app should have rate limiting.
-        // For this, we'll just re-run the signup logic which overwrites the temp user and sends a new OTP.
-        const tempUser = await findTempUserByEmail(email);
-        if (!tempUser) return res.status(400).json({ ok: false, error: 'No pending registration found for this email.' });
+        if (!email) {
+            return res.status(400).json({ ok: false, error: 'Email is required' });
+        }
 
-        // Re-use the signup logic to generate and send a new OTP
-        const { username, password } = tempUser; // We need the original password hash
-        await router.post('/signup', { body: { username, email, password } }, res, next);
+        const tempUser = await findTempUserByEmail(email);
+        if (!tempUser) {
+            // To prevent email enumeration, we send a success-like response even if the user doesn't exist.
+            // The message implies an action was taken without confirming the user's existence.
+            return res.status(200).json({ ok: true, message: 'If a registration is pending for this email, a new OTP has been sent.' });
+        }
+
+        // Generate a new OTP and update the expiry
+        const newOtp = crypto.randomInt(100000, 999999).toString();
+        const newOtpExpires = Date.now() + 10 * 60 * 1000; // 10 minutes
+
+        // Update the temporary user data with the new OTP
+        tempUser.otp = newOtp;
+        tempUser.otpExpires = newOtpExpires;
+        await saveTempUser(email, tempUser);
+
+        // Send the new verification email
+        await sendVerificationEmail(email, newOtp);
+
+        res.status(200).json({ ok: true, message: 'A new OTP has been sent to your email.' });
 
     } catch (error) {
         console.error('Error in POST /auth/resend-otp:', error.message);
