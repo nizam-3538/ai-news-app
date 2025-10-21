@@ -635,8 +635,8 @@
         }
 
         function setupTranslationListeners() {
-            const translateButton = document.getElementById('translate-button');
-            const translationSpinner = document.getElementById('translation-spinner');
+            const translateButton = document.getElementById('translate-button'); // Re-select button every time
+            const translationSpinner = document.getElementById('translation-spinner'); // Re-select spinner every time
             if (translateButton) {
                 // Initialize Bootstrap dropdown
                 if (typeof bootstrap !== 'undefined') {
@@ -647,10 +647,10 @@
                     item.addEventListener('click', async (e) => {
                         e.preventDefault();
                         const lang = e.target.getAttribute('data-lang');
-                        
+
                         // Disable button and show spinner
-                        translateButton.disabled = true;
-                        translationSpinner.classList.remove('d-none');
+                        if (translateButton) translateButton.disabled = true;
+                        if (translationSpinner) translationSpinner.classList.remove('d-none');
 
                         if (lang === 'English') {
                             // Revert to original by re-displaying
@@ -658,6 +658,7 @@
                             // Re-enable button and hide spinner
                             translateButton.disabled = false;
                             translationSpinner.classList.add('d-none');
+                            // No need to re-call displayArticle here, as it's handled by the general flow.
                             return;
                         }
 
@@ -690,8 +691,8 @@
                             alert(`Sorry, I couldn't translate the article to ${lang}. Please try again. Error: ${error.message}`);
                         } finally {
                             // Always re-enable button and hide spinner
-                            translateButton.disabled = false;
-                            translationSpinner.classList.add('d-none');
+                            if (translateButton) translateButton.disabled = false;
+                            if (translationSpinner) translationSpinner.classList.add('d-none');
                         }
                     });
                 });
@@ -715,9 +716,8 @@
                 try {
                     // Load article from backend using the index
                     const article = await loadArticleFromBackend(articleIndex);
-                    displayArticle(article);
-                    setupActionButtonsListeners(); // Call once after article is displayed
-                    setupTranslationListeners(); // Call here to attach listeners after article is displayed
+                    displayArticle(article); // This function internally calls setupActionButtonsListeners() and setupTranslationListeners()
+                    // Removed redundant calls to setupActionButtonsListeners() and setupTranslationListeners() here.
                     showInitialGreeting();
                 } catch (error) {
                     showError(error.message || 'Failed to load article');
