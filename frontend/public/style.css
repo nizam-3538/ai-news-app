@@ -830,3 +830,22 @@ a:hover {
     border: 1px solid #ccc;
   }
 }
+
+/* Enhanced News Card Design */
+.news-card {
+  border-top: 4px solid var(--primary-color);
+  transition: all 0.3s ease-in-out;
+}
+
+.news-card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-lg);
+}
+
+.news-card .badge.bg-success {
+    background-color: var(--sentiment-positive) !important;
+}
+
+.news-card .badge.bg-info {
+    background-color: var(--info-color) !important;
+}
