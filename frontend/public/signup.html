@@ -279,7 +279,8 @@
         const otpInput = document.getElementById('otp');
         
         const GOOGLE_CLIENT_ID = 'PASTE_YOUR_ACTUAL_CLIENT_ID_HERE.apps.googleusercontent.com'; // Replace with your actual client ID
-        
+        const API_BASE_URL = 'http://localhost:3000'; // Adjust if your backend runs elsewhere
+
         // Initialize Google OAuth
         function initializeGoogleOAuth() {
             if (typeof google !== 'undefined') {
@@ -293,27 +294,28 @@
         }
         
         // Handle Google Sign Up Response
-        function handleGoogleSignUp(response) {
+        async function handleGoogleSignUp(response) {
             try {
-                console.log('Google Sign Up Success');
-                
-                // Use the Auth module to handle Google authentication
-                Auth.googleLogin(response.credential)
-                    .then(result => {
-                        if (result.success) {
-                            showStatusMessage('Google Sign Up successful! Redirecting...', 'success');
-                            setTimeout(() => {
-                                window.location.href = 'main.html';
-                            }, 1000);
-                        } else {
-                            showStatusMessage(result.error || 'Google Sign Up failed. Please try again.', 'error');
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Google Sign Up error:', error);
-                        showStatusMessage('Google Sign Up failed. Please try again.', 'error');
-                    });
-                
+                showStatusMessage('Verifying Google Sign-In...', 'info');
+                const res = await fetch(`${API_BASE_URL}/auth/google`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ credential: response.credential })
+                });
+
+                const result = await res.json();
+
+                if (result.ok) {
+                    showStatusMessage('Google Sign Up successful! Redirecting...', 'success');
+                    // In a real app, you'd store the token from result.token
+                    localStorage.setItem('currentUser', JSON.stringify(result.user));
+                    localStorage.setItem('jwtToken', result.token);
+                    setTimeout(() => {
+                        window.location.href = 'main.html';
+                    }, 1000);
+                } else {
+                    showStatusMessage(result.error || 'Google Sign Up failed. Please try again.', 'error');
+                }
             } catch (error) {
                 console.error('Error handling Google Sign Up:', error);
                 showStatusMessage('Google Sign Up failed. Please try again.', 'error');
@@ -325,26 +327,49 @@
             if (typeof google !== 'undefined') {
                 google.accounts.id.prompt((notification) => {
                     if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-                        // Fallback: show one-tap if prompt fails
                         console.log('Google One Tap not displayed, showing alternative method');
-                        showStatusMessage('Please allow popups for Google Sign Up', 'warning');
+                        showStatusMessage('Please allow popups for Google Sign In', 'warning');
                     }
                 });
             } else {
-                showStatusMessage('Google Sign Up is not available. Please try again later.', 'warning');
+                showStatusMessage('Google Sign In is not available. Please try again later.', 'warning');
             }
         });
 
-        sendOtpBtn.addEventListener('click', function() {
+        // Send OTP button handler
+        sendOtpBtn.addEventListener('click', async function() {
             const email = emailInput.value.trim();
-            if (email && validateEmail(email)) {
-                // In a real application, you would send an OTP to the email here.
-                // For this example, we'll just show the OTP field.
-                otpSection.classList.remove('hidden');
+            if (!email || !validateEmail(email)) {
+                showError('email', 'Please enter a valid email address first.');
+                return;
+            }
+            
+            clearError('email');
+            sendOtpBtn.disabled = true;
+            sendOtpBtn.textContent = 'Sending...';
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/auth/send-otp`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email })
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    otpSection.classList.remove('hidden');
+                    otpInput.focus();
+                    showStatusMessage('An OTP has been sent to your email.', 'success');
+                } else {
+                    showStatusMessage(result.error || 'Failed to send OTP.', 'error');
+                }
+            } catch (error) {
+                console.error('Error sending OTP:', error);
+                showStatusMessage('Failed to send OTP. Check the server connection.', 'error');
+            } finally {
+                sendOtpBtn.disabled = false;
                 sendOtpBtn.textContent = 'Resend OTP';
-                showStatusMessage('An OTP has been sent to your email.', 'success');
-            } else {
-                showError('email', 'Please enter a valid email address');
             }
         });
         
@@ -559,7 +584,7 @@
             }
 
             if (otpSection.classList.contains('hidden')) {
-                showError('email', 'Please send and verify OTP');
+                showError('email', 'Please request and enter an OTP.');
                 hasErrors = true;
             } else if (!otp) {
                 showError('otp', 'OTP is required');
@@ -595,52 +620,30 @@
             setLoading(true);
             
             try {
-                // Check if Auth module is available
-                if (typeof Auth !== 'undefined') {
-                    const result = await Auth.signup(username, email, password, otp);
-                    
-                    if (result.success) {
-                        showStatusMessage('Account created successfully! Redirecting to login...', 'success');
-                        setTimeout(() => {
-                            window.location.href = 'index.html';
-                        }, 2000);
-                    } else {
-                        showStatusMessage(result.error || 'Account creation failed. Please try again.');
-                    }
-                } else {
-                    // Fallback for demo purposes - store in localStorage
-                    const users = JSON.parse(localStorage.getItem('ai_news_users') || '[]');
-                    
-                    // Check if user already exists
-                    if (users.find(u => u.email === email)) {
-                        showStatusMessage('An account with this email already exists');
-                        return;
-                    }
-                    
-                    if (users.find(u => u.username === username)) {
-                        showStatusMessage('This username is already taken');
-                        return;
-                    }
-                    
-                    // Add new user
-                    users.push({
-                        id: Date.now().toString(),
-                        username,
-                        email,
-                        password: password, // Note: In production, this should be hashed
-                        createdAt: new Date().toISOString()
-                    });
-                    
-                    localStorage.setItem('ai_news_users', JSON.stringify(users));
+                const response = await fetch(`${API_BASE_URL}/auth/signup`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, email, password, confirmPassword, otp })
+                });
+
+                const result = await response.json();
+
+                if (result.ok) {
                     showStatusMessage('Account created successfully! Redirecting to login...', 'success');
-                    
                     setTimeout(() => {
-                            window.location.href = 'index.html';
-                        }, 2000);
+                        window.location.href = 'index.html';
+                    }, 2000);
+                } else {
+                    // Handle specific validation errors from backend
+                    if (result.details) {
+                        showStatusMessage(`Signup failed: ${result.details.join(', ')}`, 'error');
+                    } else {
+                        showStatusMessage(result.error || 'Account creation failed. Please try again.', 'error');
+                    }
                 }
             } catch (error) {
                 console.error('Signup error:', error);
-                showStatusMessage('Account creation failed. Please check your connection and try again.');
+                showStatusMessage('Account creation failed. Please check your connection and try again.', 'error');
             } finally {
                 setLoading(false);
             }
