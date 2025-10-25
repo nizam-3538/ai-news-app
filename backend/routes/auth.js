@@ -7,8 +7,23 @@ const express = require('express');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const nodemailer = require('nodemailer');
+const crypto = require('crypto');
 
 const router = express.Router();
+
+// In-memory store for OTPs. In production, use a persistent store like Redis.
+const otpStore = {};
+
+// Nodemailer transporter setup
+// IMPORTANT: Replace with your own email service credentials.
+const transporter = nodemailer.createTransport({
+  service: 'gmail', // or your email service
+  auth: {
+    user: process.env.EMAIL_USER, // Your email from .env file
+    pass: process.env.EMAIL_PASS, // Your email password or app password from .env file
+  },
+});
 
 // Configuration
 const SALT_ROUNDS = 12;
@@ -73,6 +88,41 @@ function validatePassword(password) {
 }
 
 /**
+ * POST /auth/send-otp - Generate and send an OTP to the user's email
+ * Request body:
+ * - email: string (required)
+ */
+router.post('/send-otp', async (req, res) => {
+  const { email } = req.body;
+
+  if (!email || !isValidEmail(email)) {
+    return res.status(400).json({ error: 'A valid email is required' });
+  }
+
+  // Generate a 6-digit OTP
+  const otp = crypto.randomInt(100000, 999999).toString();
+  const expires = Date.now() + 10 * 60 * 1000; // OTP expires in 10 minutes
+
+  // Store the OTP and its expiration time
+  otpStore[email] = { otp, expires };
+
+  const mailOptions = {
+    from: process.env.EMAIL_USER,
+    to: email,
+    subject: 'Your OTP for AI News Aggregator',
+    text: `Your One-Time Password (OTP) is: ${otp}\n\nIt will expire in 10 minutes.\n`,
+  };
+
+  try {
+    await transporter.sendMail(mailOptions);
+    res.status(200).json({ message: 'OTP sent successfully' });
+  } catch (error) {
+    console.error('Error sending OTP:', error);
+    res.status(500).json({ error: 'Failed to send OTP' });
+  }
+});
+
+/**
  * POST /auth/signup - Register new user
  * Request body:
  * - username: string (required, 3-50 chars)
@@ -82,7 +132,7 @@ function validatePassword(password) {
  */
 router.post('/signup', async (req, res, next) => {
   try {
-    const { username, email, password, confirmPassword } = req.body;
+    const { username, email, password, confirmPassword, otp } = req.body;
     
     // Validation
     const errors = [];
@@ -93,6 +143,17 @@ router.post('/signup', async (req, res, next) => {
     
     if (!email || !isValidEmail(email)) {
       errors.push('Valid email address is required');
+    }
+
+    // OTP Validation
+    const storedOtp = otpStore[email];
+    if (!storedOtp) {
+        errors.push('OTP not found. Please request a new one.');
+    } else if (Date.now() > storedOtp.expires) {
+        errors.push('OTP has expired. Please request a new one.');
+        delete otpStore[email];
+    } else if (otp !== storedOtp.otp) {
+        errors.push('Invalid OTP.');
     }
     
     if (!password) {
@@ -115,6 +176,9 @@ router.post('/signup', async (req, res, next) => {
         details: errors
       });
     }
+
+    // If OTP is valid, delete it
+    delete otpStore[email];
     
     console.log(`Signup attempt for email: ${email}, username: ${username}`);
     

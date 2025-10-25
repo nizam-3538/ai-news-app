@@ -66,17 +66,36 @@
             <!-- Email Field -->
             <div class="form-group">
                 <label for="email" class="form-label">Email Address</label>
-                <input 
-                    type="email" 
-                    id="email" 
-                    name="email" 
-                    class="form-input" 
-                    placeholder="Enter your email"
-                    required
-                    autocomplete="email"
-                    aria-describedby="emailError"
-                >
+                <div class="input-group">
+                    <input 
+                        type="email" 
+                        id="email" 
+                        name="email" 
+                        class="form-input" 
+                        placeholder="Enter your email"
+                        required
+                        autocomplete="email"
+                        aria-describedby="emailError"
+                    >
+                    <button type="button" id="sendOtpBtn" class="btn btn-secondary">Send OTP</button>
+                </div>
                 <div id="emailError" class="form-error hidden" role="alert"></div>
+            </div>
+
+            <!-- OTP Field -->
+            <div id="otpSection" class="form-group hidden">
+                <label for="otp" class="form-label">Email OTP</label>
+                <input 
+                    type="text" 
+                    id="otp" 
+                    name="otp" 
+                    class="form-input" 
+                    placeholder="Enter OTP from your email"
+                    required
+                    autocomplete="one-time-code"
+                    aria-describedby="otpError"
+                >
+                <div id="otpError" class="form-error hidden" role="alert"></div>
             </div>
 
             <!-- Password Field -->
@@ -255,6 +274,9 @@
         const togglePassword = document.getElementById('togglePassword');
         const toggleConfirmPassword = document.getElementById('toggleConfirmPassword');
         const googleSignUpBtn = document.getElementById('googleSignUpBtn');
+        const sendOtpBtn = document.getElementById('sendOtpBtn');
+        const otpSection = document.getElementById('otpSection');
+        const otpInput = document.getElementById('otp');
         
         const GOOGLE_CLIENT_ID = 'PASTE_YOUR_ACTUAL_CLIENT_ID_HERE.apps.googleusercontent.com'; // Replace with your actual client ID
         
@@ -310,6 +332,19 @@
                 });
             } else {
                 showStatusMessage('Google Sign Up is not available. Please try again later.', 'warning');
+            }
+        });
+
+        sendOtpBtn.addEventListener('click', function() {
+            const email = emailInput.value.trim();
+            if (email && validateEmail(email)) {
+                // In a real application, you would send an OTP to the email here.
+                // For this example, we'll just show the OTP field.
+                otpSection.classList.remove('hidden');
+                sendOtpBtn.textContent = 'Resend OTP';
+                showStatusMessage('An OTP has been sent to your email.', 'success');
+            } else {
+                showError('email', 'Please enter a valid email address');
             }
         });
         
@@ -381,7 +416,7 @@
         }
         
         function clearErrors() {
-            ['username', 'email', 'password', 'confirmPassword'].forEach(clearError);
+            ['username', 'email', 'password', 'confirmPassword', 'otp'].forEach(clearError);
             statusMessage.classList.add('hidden');
         }
         
@@ -502,6 +537,7 @@
             const password = passwordInput.value;
             const confirmPassword = confirmPasswordInput.value;
             const agreeTerms = agreeTermsInput.checked;
+            const otp = otpInput.value.trim();
             
             // Validation
             let hasErrors = false;
@@ -519,6 +555,14 @@
                 hasErrors = true;
             } else if (!validateEmail(email)) {
                 showError('email', 'Please enter a valid email address');
+                hasErrors = true;
+            }
+
+            if (otpSection.classList.contains('hidden')) {
+                showError('email', 'Please send and verify OTP');
+                hasErrors = true;
+            } else if (!otp) {
+                showError('otp', 'OTP is required');
                 hasErrors = true;
             }
             
@@ -553,7 +597,7 @@
             try {
                 // Check if Auth module is available
                 if (typeof Auth !== 'undefined') {
-                    const result = await Auth.signup(username, email, password);
+                    const result = await Auth.signup(username, email, password, otp);
                     
                     if (result.success) {
                         showStatusMessage('Account created successfully! Redirecting to login...', 'success');
