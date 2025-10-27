@@ -223,12 +223,28 @@
             showTypingIndicator(true);
             
             try {
+                // Get the authentication token from localStorage
+                const currentUser = localStorage.getItem('currentUser');
+                const headers = {
+                    'Content-Type': 'application/json'
+                };
+                
+                // Add authorization header if user is authenticated
+                if (currentUser) {
+                    try {
+                        const userData = JSON.parse(currentUser);
+                        if (userData.token) {
+                            headers['Authorization'] = `Bearer ${userData.token}`;
+                        }
+                    } catch (e) {
+                        console.error('Error parsing user data:', e);
+                    }
+                }
+                
                 // Call the real AI API
                 const response = await fetch('https://ai-news-app-backend.vercel.app/analyze', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
+                    headers: headers,
                     body: JSON.stringify({
                         text: `Title: ${currentArticle.title}
 
@@ -357,8 +373,34 @@ Content: ${currentArticle.content}`,
 
         async function loadArticleFromBackend(articleIndex) {
             try {
-                const response = await fetch(`https://ai-news-app-backend.vercel.app/news/${articleIndex}`);
+                // Get the authentication token from localStorage
+                const currentUser = localStorage.getItem('currentUser');
+                const headers = {
+                    'Content-Type': 'application/json'
+                };
+                
+                // Add authorization header if user is authenticated
+                if (currentUser) {
+                    try {
+                        const userData = JSON.parse(currentUser);
+                        if (userData.token) {
+                            headers['Authorization'] = `Bearer ${userData.token}`;
+                        }
+                    } catch (e) {
+                        console.error('Error parsing user data:', e);
+                    }
+                }
+                
+                const response = await fetch(`https://ai-news-app-backend.vercel.app/news/${articleIndex}`, {
+                    headers: headers
+                });
+                
                 if (!response.ok) {
+                    if (response.status === 401) {
+                        // Unauthorized - redirect to login
+                        window.location.href = 'index.html';
+                        throw new Error('Unauthorized access');
+                    }
                     throw new Error(`HTTP ${response.status}: ${response.statusText}`);
                 }
                 const data = await response.json();
@@ -563,60 +605,11 @@ Content: ${currentArticle.content}`,
                 });
             }
 
-            setupActionButtonsListeners(); // Moved here to ensure it runs after the article is displayed
-
-            // Add event listeners for share and favorite buttons
-            const shareButton = document.getElementById('share-button');
-            if (shareButton) {
-                shareButton.addEventListener('click', () => {
-                    if (navigator.share) {
-                        navigator.share({
-                            title: currentArticle.title,
-                            text: currentArticle.summary,
-                            url: window.location.href,
-                        })
-                        .then(() => console.log('Successful share'))
-                        .catch((error) => console.log('Error sharing', error));
-                    } else {
-                        // Fallback for browsers that don't support navigator.share
-                        navigator.clipboard.writeText(window.location.href).then(() => {
-                            alert('Link copied to clipboard!');
-                        }).catch(err => {
-                            console.error('Could not copy text: ', err);
-                            alert('Failed to copy link.');
-                        });
-                    }
-                });
-            }
-
-            const favoriteButton = document.getElementById('favorite-button');
-            if (favoriteButton && currentArticle && currentArticle.id) {
-                let isFavorited = Favorites.isFavorited(currentArticle.id);
-
-                const updateButtonState = () => {
-                    if (isFavorited) {
-                        favoriteButton.innerHTML = '<i class="bi bi-heart-fill"></i> Favorited';
-                        favoriteButton.classList.remove('btn-outline-danger');
-                        favoriteButton.classList.add('btn-danger');
-                    } else {
-                        favoriteButton.innerHTML = '<i class="bi bi-heart"></i> Add to Favorites';
-                        favoriteButton.classList.remove('btn-danger');
-                        favoriteButton.classList.add('btn-outline-danger');
-                    }
-                };
-
-                updateButtonState();
-
-                favoriteButton.addEventListener('click', async () => {
-                    if (isFavorited) {
-                        await Favorites.removeFavorite(currentArticle.id);
-                    } else {
-                        await Favorites.addFavorite(currentArticle);
-                    }
-                    isFavorited = !isFavorited;
-                    updateButtonState();
-                });
-            }
+            // Setup action buttons listeners
+            setupActionButtonsListeners();
+            
+            // Setup translation listeners after a short delay to ensure DOM is ready
+            setTimeout(setupTranslationListeners, 100);
         }
 
         function setupActionButtonsListeners() {
@@ -674,16 +667,25 @@ Content: ${currentArticle.content}`,
         }
 
         function setupTranslationListeners() {
-            const translateButton = document.getElementById('translate-button'); // Re-select button every time
-            const translationSpinner = document.getElementById('translation-spinner'); // Re-select spinner every time
+            // Re-select elements every time this function is called
+            const translateButton = document.getElementById('translate-button');
+            const translationSpinner = document.getElementById('translation-spinner');
+            
             if (translateButton) {
                 // Initialize Bootstrap dropdown
                 if (typeof bootstrap !== 'undefined') {
                     new bootstrap.Dropdown(translateButton);
                 }
 
-                document.querySelectorAll('.dropdown-item[data-lang]').forEach(item => {
-                    item.addEventListener('click', async (e) => {
+                // Remove any existing event listeners to prevent duplicates
+                const dropdownItems = document.querySelectorAll('.dropdown-item[data-lang]');
+                dropdownItems.forEach(item => {
+                    // Clone and replace to remove event listeners
+                    const newElement = item.cloneNode(true);
+                    item.parentNode.replaceChild(newElement, item);
+                    
+                    // Add new event listener
+                    newElement.addEventListener('click', async (e) => {
                         e.preventDefault();
                         const lang = e.target.getAttribute('data-lang');
 
@@ -697,7 +699,8 @@ Content: ${currentArticle.content}`,
                             // Re-enable button and hide spinner
                             translateButton.disabled = false;
                             translationSpinner.classList.add('d-none');
-                            // No need to re-call displayArticle here, as it's handled by the general flow.
+                            // Re-setup translation listeners after re-displaying
+                            setTimeout(setupTranslationListeners, 100);
                             return;
                         }
 
@@ -708,9 +711,27 @@ Summary: ${originalArticleData.summary}
 
 Content: ${originalArticleData.content}`;
                             
+                            // Get the authentication token from localStorage
+                            const currentUser = localStorage.getItem('currentUser');
+                            const headers = {
+                                'Content-Type': 'application/json'
+                            };
+                            
+                            // Add authorization header if user is authenticated
+                            if (currentUser) {
+                                try {
+                                    const userData = JSON.parse(currentUser);
+                                    if (userData.token) {
+                                        headers['Authorization'] = `Bearer ${userData.token}`;
+                                    }
+                                } catch (e) {
+                                    console.error('Error parsing user data:', e);
+                                }
+                            }
+                            
                             const response = await fetch('https://ai-news-app-backend.vercel.app/analyze/translate', {
                                 method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
+                                headers: headers,
                                 body: JSON.stringify({ text: textToTranslate, language: lang })
                             });
 
@@ -723,7 +744,7 @@ Content: ${originalArticleData.content}`;
                                 translatedArticle.summary = translated.summary || originalArticleData.summary;
                                 translatedArticle.content = translated.content || originalArticleData.content;
                                 
-                                // Re-display the article with translated content, which also re-attaches listeners
+                                // Re-display the article with translated content
                                 displayArticle(translatedArticle);
                                 document.querySelector('.card-title').innerHTML += ` <span class="badge bg-info text-dark">(${lang})</span>`;
                             } else {
@@ -736,6 +757,8 @@ Content: ${originalArticleData.content}`;
                             // Always re-enable button and hide spinner
                             if (translateButton) translateButton.disabled = false;
                             if (translationSpinner) translationSpinner.classList.add('d-none');
+                            // Re-setup translation listeners after translation
+                            setTimeout(setupTranslationListeners, 100);
                         }
                     });
                 });
