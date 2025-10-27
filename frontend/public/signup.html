@@ -94,11 +94,13 @@
                     autocomplete="one-time-code"
                     aria-describedby="otpError"
                 >
+                <button type="button" id="verifyOtpBtn" class="btn btn-primary" style="width: 100%; margin-top: var(--spacing-sm);">Verify OTP</button>
                 <div id="otpError" class="form-error hidden" role="alert"></div>
+                <div id="otpSuccess" class="alert alert-success hidden" style="margin-top: var(--spacing-sm);">OTP verified successfully!</div>
             </div>
 
             <!-- Password Field -->
-            <div class="form-group">
+            <div id="passwordSection" class="form-group hidden">
                 <label for="password" class="form-label">Password</label>
                 <div style="position: relative;">
                     <input 
@@ -140,7 +142,7 @@
             </div>
 
             <!-- Confirm Password Field -->
-            <div class="form-group">
+            <div id="confirmPasswordSection" class="form-group hidden">
                 <label for="confirmPassword" class="form-label">Confirm Password</label>
                 <div style="position: relative;">
                     <input 
@@ -168,7 +170,7 @@
             </div>
 
             <!-- Terms and Privacy -->
-            <div class="form-group" style="display: flex; align-items: flex-start; gap: var(--spacing-sm);">
+            <div id="termsSection" class="form-group hidden" style="display: flex; align-items: flex-start; gap: var(--spacing-sm);">
                 <input 
                     type="checkbox" 
                     id="agreeTerms" 
@@ -183,7 +185,7 @@
             </div>
 
             <!-- Submit Button -->
-            <div class="form-group">
+            <div id="submitSection" class="form-group hidden">
                 <button type="submit" id="submitBtn" class="btn btn-primary" style="width: 100%;">
                     <span id="submitText">Create Account</span>
                     <span id="submitSpinner" class="loading hidden" style="margin-left: var(--spacing-sm);"></span>
@@ -268,9 +270,13 @@
         const sendOtpBtn = document.getElementById('sendOtpBtn');
         const otpSection = document.getElementById('otpSection');
         const otpInput = document.getElementById('otp');
+        const verifyOtpBtn = document.getElementById('verifyOtpBtn');
+        const otpSuccess = document.getElementById('otpSuccess');
+        const passwordSection = document.getElementById('passwordSection');
+        const confirmPasswordSection = document.getElementById('confirmPasswordSection');
+        const termsSection = document.getElementById('termsSection');
+        const submitSection = document.getElementById('submitSection');
         
-        // Note: You need to configure your Google OAuth client ID in the Google Cloud Console
-        // and add your domain to the authorized origins list
         const GOOGLE_CLIENT_ID = '576994739677-3dc0vi2lpme68ddni7kteafni07da68b.apps.googleusercontent.com'; // Replace with your actual client ID
         const API_BASE_URL = 'https://ai-news-app-backend.vercel.app'; // Adjust if your backend runs elsewhere
 
@@ -360,6 +366,60 @@
             } finally {
                 sendOtpBtn.disabled = false;
                 sendOtpBtn.textContent = 'Resend OTP';
+            }
+        });
+        
+        // Verify OTP button handler
+        verifyOtpBtn.addEventListener('click', async function() {
+            const email = emailInput.value.trim();
+            const otp = otpInput.value.trim();
+            
+            if (!email || !validateEmail(email)) {
+                showError('email', 'Please enter a valid email address.');
+                return;
+            }
+            
+            if (!otp) {
+                showError('otp', 'Please enter the OTP.');
+                return;
+            }
+            
+            clearError('otp');
+            verifyOtpBtn.disabled = true;
+            verifyOtpBtn.textContent = 'Verifying...';
+
+            try {
+                // Verify OTP with backend
+                const response = await fetch(`${API_BASE_URL}/auth/verify-otp`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, otp })
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    // Show success message
+                    otpSuccess.classList.remove('hidden');
+                    showStatusMessage('OTP verified successfully! Please create your password.', 'success');
+                    
+                    // Show password fields
+                    passwordSection.classList.remove('hidden');
+                    confirmPasswordSection.classList.remove('hidden');
+                    termsSection.classList.remove('hidden');
+                    submitSection.classList.remove('hidden');
+                    
+                    // Focus on password field
+                    passwordInput.focus();
+                } else {
+                    showStatusMessage(result.error || 'Failed to verify OTP.', 'error');
+                }
+            } catch (error) {
+                console.error('Error verifying OTP:', error);
+                showStatusMessage('Failed to verify OTP. Please try again.', 'error');
+            } finally {
+                verifyOtpBtn.disabled = false;
+                verifyOtpBtn.textContent = 'Verify OTP';
             }
         });
         
@@ -573,10 +633,7 @@
                 hasErrors = true;
             }
 
-            if (otpSection.classList.contains('hidden')) {
-                showError('email', 'Please request and enter an OTP.');
-                hasErrors = true;
-            } else if (!otp) {
+            if (!otp) {
                 showError('otp', 'OTP is required');
                 hasErrors = true;
             }

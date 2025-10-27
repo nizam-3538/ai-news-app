@@ -123,6 +123,42 @@ router.post('/send-otp', async (req, res) => {
 });
 
 /**
+ * POST /auth/verify-otp - Verify an OTP for email verification
+ * Request body:
+ * - email: string (required)
+ * - otp: string (required)
+ */
+router.post('/verify-otp', (req, res) => {
+  const { email, otp } = req.body;
+
+  if (!email || !isValidEmail(email)) {
+    return res.status(400).json({ error: 'A valid email is required' });
+  }
+
+  if (!otp) {
+    return res.status(400).json({ error: 'OTP is required' });
+  }
+
+  // Check if OTP exists and is valid
+  const storedOtp = otpStore[email];
+  if (!storedOtp) {
+    return res.status(400).json({ error: 'OTP not found. Please request a new one.' });
+  }
+
+  if (Date.now() > storedOtp.expires) {
+    delete otpStore[email]; // Clean up expired OTP
+    return res.status(400).json({ error: 'OTP has expired. Please request a new one.' });
+  }
+
+  if (otp !== storedOtp.otp) {
+    return res.status(400).json({ error: 'Invalid OTP.' });
+  }
+
+  // OTP is valid - don't delete it yet as it will be used during signup
+  res.status(200).json({ message: 'OTP verified successfully' });
+});
+
+/**
  * POST /auth/signup - Register new user
  * Request body:
  * - username: string (required, 3-50 chars)
