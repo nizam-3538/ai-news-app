@@ -613,7 +613,7 @@ router.get('/feeds', authenticateToken, async (req, res) => {
 
 /**
  * GET /news/:id
- * Fetch a specific news article by ID
+ * Fetch a specific news article by ID or index
  * Returns article data for frontend display
  */
 router.get('/:id', authenticateToken, async (req, res) => {
@@ -622,47 +622,83 @@ router.get('/:id', authenticateToken, async (req, res) => {
   console.log(`Fetching news article with ID: ${id}`);
   
   try {
-    // First, try to get all articles and find the one with matching ID
-    let articles = await fetchAllNews('', 200, 3);
-    
-    // If no articles from APIs, fallback to RSS feeds
-    if (articles.length === 0) {
-      console.log('No articles from APIs, falling back to RSS feeds for article lookup...');
-      try {
-        const rssArticles = await fetchAllFeeds();
-        articles = rssArticles;
-      } catch (rssError) {
-        console.error('RSS fallback also failed:', rssError.message);
+    // Check if ID is a number (index-based lookup)
+    if (!isNaN(id) && Number.isInteger(Number(id)) && Number(id) >= 0) {
+      // Use index-based lookup for backward compatibility
+      let articles = await fetchAllNews('', 200, 3);
+      
+      // If no articles from APIs, fallback to RSS feeds
+      if (articles.length === 0) {
+        console.log('No articles from APIs, falling back to RSS feeds for article lookup...');
+        try {
+          const rssArticles = await fetchAllFeeds();
+          articles = rssArticles;
+        } catch (rssError) {
+          console.error('RSS fallback also failed:', rssError.message);
+        }
       }
-    }
-    
-    // Use simple index-based lookup
-    const articleIndex = parseInt(id);
-    console.log(`Looking for article at index: ${articleIndex}`);
-    
-    if (isNaN(articleIndex) || articleIndex < 0 || articleIndex >= articles.length) {
-      console.log(`Invalid article index: ${articleIndex}, total articles: ${articles.length}`);
-      return res.status(404).json({
-        success: false,
-        error: 'Article not found'
+      
+      // Use simple index-based lookup
+      const articleIndex = parseInt(id);
+      console.log(`Looking for article at index: ${articleIndex}`);
+      
+      if (isNaN(articleIndex) || articleIndex < 0 || articleIndex >= articles.length) {
+        console.log(`Invalid article index: ${articleIndex}, total articles: ${articles.length}`);
+        return res.status(404).json({
+          success: false,
+          error: 'Article not found'
+        });
+      }
+      
+      const article = articles[articleIndex];
+      console.log(`Found article: ${article.title}`);
+      
+      if (!article) {
+        return res.status(404).json({
+          success: false,
+          error: 'Article not found'
+        });
+      }
+      
+      // Return the article data
+      res.json({
+        success: true,
+        data: article
+      });
+    } else {
+      // Use ID-based lookup
+      let articles = await fetchAllNews('', 200, 3);
+      
+      // If no articles from APIs, fallback to RSS feeds
+      if (articles.length === 0) {
+        console.log('No articles from APIs, falling back to RSS feeds for article lookup...');
+        try {
+          const rssArticles = await fetchAllFeeds();
+          articles = rssArticles;
+        } catch (rssError) {
+          console.error('RSS fallback also failed:', rssError.message);
+        }
+      }
+      
+      // Find article by ID
+      const article = articles.find(a => a.id === id);
+      
+      if (!article) {
+        console.log(`Article with ID ${id} not found`);
+        return res.status(404).json({
+          success: false,
+          error: 'Article not found'
+        });
+      }
+      
+      console.log(`Found article: ${article.title}`);
+      
+      // Return the article data
+      res.json({
+        success: true,
+        data: article
       });
     }
-    
-    const article = articles[articleIndex];
-    console.log(`Found article: ${article.title}`);
-    
-    if (!article) {
-      return res.status(404).json({
-        success: false,
-        error: 'Article not found'
-      });
-    }
-    
-    // Return the article data
-    res.json({
-      success: true,
-      data: article
-    });
     
   } catch (error) {
     console.error('Error fetching news article:', error.message);

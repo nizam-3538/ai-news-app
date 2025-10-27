@@ -281,7 +281,7 @@ const App = {
       </div>
       
       <div class="card-footer">
-        <button class="btn btn-primary btn-sm read-article-btn" data-article-index="${index}">
+        <button class="btn btn-primary btn-sm read-article-btn" data-article-id="${article.id}">
           Read Article
         </button>
         <a href="${article.link}" target="_blank" rel="noopener" class="btn btn-secondary btn-sm">
@@ -312,12 +312,11 @@ const App = {
       
       // Only navigate if the click is not on the favorite button or original link
       if (!e.target.closest('.favorite-btn') && !e.target.closest('a.btn')) {
-        const articleIndex = card.getAttribute('data-article-index');
-        if (articleIndex !== null) {
-          const navUrl = `news.html#${articleIndex}`; // Use hash fragment with index
+        if (article.id !== null) {
+          const navUrl = `news.html#${article.id}`; // Use hash fragment with article ID
           window.location.assign(navUrl);
         } else {
-          console.error('DEBUG Frontend: Attempted to navigate, but article index was missing from card.');
+          console.error('DEBUG Frontend: Attempted to navigate, but article ID was missing from card.');
         }
       }
     });
@@ -348,12 +347,12 @@ const App = {
         }
         
         e.stopPropagation(); // Prevent card click from also firing
-        const articleIndex = readBtn.getAttribute('data-article-index');
-        if (articleIndex !== null) {
-          const navUrl = `news.html#${articleIndex}`; // Use hash fragment with index
+        const articleId = readBtn.getAttribute('data-article-id');
+        if (articleId !== null) {
+          const navUrl = `news.html#${articleId}`; // Use hash fragment with article ID
           window.location.assign(navUrl);
         } else {
-          console.error('DEBUG Frontend: Read Article button clicked, but article index was missing.');
+          console.error('DEBUG Frontend: Read Article button clicked, but article ID was missing.');
         }
       });
     }

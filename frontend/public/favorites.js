@@ -549,7 +549,7 @@ const Favorites = {
       </div>
       
       <div class="card-footer">
-        <a href="news.html?id=${favorite.id}" class="btn btn-primary btn-sm">Read Article</a>
+        <a href="news.html#${favorite.id}" class="btn btn-primary btn-sm">Read Article</a>
         <a href="${favorite.link}" target="_blank" rel="noopener" class="btn btn-secondary btn-sm">Original</a>
       </div>
     `;
