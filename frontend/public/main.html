@@ -188,6 +188,40 @@
 
     <!-- Initialize App -->
     <script>
+        // Check authentication before initializing the app
+        function checkAuthentication() {
+            // Check if user is logged in
+            const currentUser = localStorage.getItem('currentUser');
+            
+            if (!currentUser) {
+                // Redirect to login page if not authenticated
+                window.location.href = 'index.html';
+                return false;
+            }
+            
+            try {
+                const user = JSON.parse(currentUser);
+                const expiry = localStorage.getItem('currentUser_expiry');
+                
+                // Check if token has expired
+                if (expiry && new Date().getTime() > parseInt(expiry)) {
+                    // Token expired, redirect to login
+                    localStorage.removeItem('currentUser');
+                    localStorage.removeItem('currentUser_expiry');
+                    window.location.href = 'index.html';
+                    return false;
+                }
+                
+                return true;
+            } catch (e) {
+                // Invalid user data, redirect to login
+                localStorage.removeItem('currentUser');
+                localStorage.removeItem('currentUser_expiry');
+                window.location.href = 'index.html';
+                return false;
+            }
+        }
+
         // Theme toggle functionality - Initialize immediately
         function initializeTheme() {
             const savedTheme = localStorage.getItem('theme') || 'light';
@@ -298,6 +332,11 @@
 
         // Initialize the application when DOM is loaded
         document.addEventListener('DOMContentLoaded', function() {
+            // Check authentication first
+            if (!checkAuthentication()) {
+                return; // Don't initialize app if not authenticated
+            }
+            
             // Setup theme toggle
             setupThemeToggle();
             
@@ -381,4 +420,4 @@
         });
     </script>
 </body>
-</html>        
+</html>

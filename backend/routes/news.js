@@ -7,6 +7,9 @@ const express = require('express');
 const { fetchAllFeeds } = require('../lib/rssClient');
 const { safeFetch, normalizeDate, generateId, sanitizeHTML, extractSummary, getEnhancedContent, analyzeSentiment } = require('../lib/utils');
 
+// Import authentication middleware
+const { authenticateToken } = require('./auth');
+
 const router = express.Router();
 
 // NewsAPI configuration
@@ -409,7 +412,7 @@ async function fetchAllNews(query = '', totalLimit = 200, maxConcurrency = 4) {
  * - language: Language code (optional)
  * - sortBy: Sort order (publishedAt or relevancy, default: publishedAt)
  */
-router.get('/', async (req, res) => {
+router.get('/', authenticateToken, async (req, res) => {
   const query = req.query.q || '';
   const limit = Math.min(parseInt(req.query.limit) || 200, 200);
   const sources = req.query.sources ? req.query.sources.split(',') : [];
@@ -499,7 +502,7 @@ router.get('/', async (req, res) => {
  * - country: Country code for top headlines (optional)
  * - language: Language code (optional)
  */
-router.get('/sentiment', async (req, res) => {
+router.get('/sentiment', authenticateToken, async (req, res) => {
   const category = req.query.category || '';
   const country = req.query.country || 'us';
   const language = req.query.language || 'en';
@@ -566,7 +569,7 @@ router.get('/sentiment', async (req, res) => {
  * - url: Comma-separated list of RSS feed URLs
  * - limit: Maximum number of articles to return from each feed (default: 10)
  */
-router.get('/feeds', async (req, res) => {
+router.get('/feeds', authenticateToken, async (req, res) => {
   const urls = req.query.url ? req.query.url.split(',') : [];
   const limit = Math.min(parseInt(req.query.limit) || 10, 100);
   
@@ -613,7 +616,7 @@ router.get('/feeds', async (req, res) => {
  * Fetch a specific news article by ID
  * Returns article data for frontend display
  */
-router.get('/:id', async (req, res) => {
+router.get('/:id', authenticateToken, async (req, res) => {
   const id = req.params.id;
   
   console.log(`Fetching news article with ID: ${id}`);

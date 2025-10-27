@@ -16,6 +16,12 @@ const App = {
   init() {
     console.log('🚀 AI News Aggregator application initialized');
     
+    // Check authentication first
+    if (typeof Auth !== 'undefined' && !Auth.isAuthenticated()) {
+      window.location.href = 'index.html';
+      return;
+    }
+    
     // Setup event listeners (theme is handled in index.html)
     this.setupEventListeners();
     
@@ -80,65 +86,84 @@ const App = {
   async loadNews(force = false) {
     console.log("loadNews() started");
     
-
-
-  if (this.loading) return;
-
-  this.setLoading(true);
-  this.hideError();
-
-  try {
-    const timestamp = new Date().getTime();
-    const url = `${this.API_BASE_URL}/news?_=${timestamp}${force ? '&force=true' : ''}`;
-    console.log('Fetching news from:', url);
-    const response = await fetch(url);
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    // Check authentication
+    if (typeof Auth !== 'undefined' && !Auth.isAuthenticated()) {
+      window.location.href = 'index.html';
+      return;
     }
 
-    const data = await response.json();
-    if (!data.success) {
-      throw new Error(data.error || 'Failed to load news');
+    if (this.loading) return;
+
+    this.setLoading(true);
+    this.hideError();
+
+    try {
+      const timestamp = new Date().getTime();
+      const url = `${this.API_BASE_URL}/news?_=${timestamp}${force ? '&force=true' : ''}`;
+      console.log('Fetching news from:', url);
+      
+      // Add authorization header if user is authenticated
+      const currentUser = typeof Auth !== 'undefined' ? Auth.getCurrentUser() : null;
+      const headers = {};
+      
+      if (currentUser && currentUser.token) {
+        headers['Authorization'] = `Bearer ${currentUser.token}`;
+      }
+      
+      const response = await fetch(url, { headers });
+      if (!response.ok) {
+        if (response.status === 401) {
+          // Unauthorized, redirect to login
+          if (typeof Auth !== 'undefined') {
+            Auth.logout();
+          }
+          return;
+        }
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      if (!data.success) {
+        throw new Error(data.error || 'Failed to load news');
+      }
+
+      this.articles = [];
+      data.data.forEach((article, index) => {
+        const cleanArticle = {
+          id: String(article.id || article.link || `article_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`),
+          title: article.title || 'Untitled',
+          source: article.source || 'Unknown',
+          author: article.author || 'Unknown',
+          summary: article.description || 'No summary available',
+          link: article.link || article.url || '#',
+          publishedAt: article.publishedAt || new Date().toISOString(),
+          sentiment: article.sentiment || 'neutral',
+          categories: Array.isArray(article.categories)
+            ? article.categories
+            : (typeof article.categories === 'string'
+                ? article.categories.split(',')
+                : []),
+          content: article.content || ''
+        };
+        this.articles.push(cleanArticle);
+      });
+
+      console.log(`📰 Loaded ${this.articles.length} articles`);
+
+      if (typeof Search !== 'undefined') {
+        Search.indexArticles(this.articles);
+      }
+
+      this.displayArticles(this.articles);
+      this.updateRefreshButton();
+
+    } catch (error) {
+      console.error('Error loading news:', error);
+      this.showError(error.message || 'Failed to load news');
+    } finally {
+      this.setLoading(false);
     }
-
-    this.articles = [];
-    data.data.forEach((article, index) => {
-      const cleanArticle = {
-        id: String(article.id || article.link || `article_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`),
-        title: article.title || 'Untitled',
-        source: article.source || 'Unknown',
-        author: article.author || 'Unknown',
-        summary: article.description || 'No summary available',
-        link: article.link || article.url || '#',
-        publishedAt: article.publishedAt || new Date().toISOString(),
-        sentiment: article.sentiment || 'neutral',
-        categories: Array.isArray(article.categories)
-          ? article.categories
-          : (typeof article.categories === 'string'
-              ? article.categories.split(',')
-              : []),
-        content: article.content || ''
-      };
-      this.articles.push(cleanArticle);
-    });
-
-    console.log(`📰 Loaded ${this.articles.length} articles`);
-
-    if (typeof Search !== 'undefined') {
-      Search.indexArticles(this.articles);
-    }
-
-    this.displayArticles(this.articles);
-    this.updateRefreshButton();
-
-  } catch (error) {
-    console.error('Error loading news:', error);
-    this.showError(error.message || 'Failed to load news');
-  } finally {
-    this.setLoading(false);
-  }
-}
-,
+  },
   
   /**
    * Display articles in the grid
@@ -279,6 +304,12 @@ const App = {
   setupCardEventListeners(card, article) {
     // Card click (navigate to article)
     card.addEventListener('click', (e) => {
+      // Check authentication
+      if (typeof Auth !== 'undefined' && !Auth.isAuthenticated()) {
+        window.location.href = 'index.html';
+        return;
+      }
+      
       // Only navigate if the click is not on the favorite button or original link
       if (!e.target.closest('.favorite-btn') && !e.target.closest('a.btn')) {
         const articleIndex = card.getAttribute('data-article-index');
@@ -295,6 +326,12 @@ const App = {
     const favoriteBtn = card.querySelector('.favorite-btn');
     if (favoriteBtn) {
       favoriteBtn.addEventListener('click', (e) => {
+        // Check authentication
+        if (typeof Auth !== 'undefined' && !Auth.isAuthenticated()) {
+          window.location.href = 'index.html';
+          return;
+        }
+        
         e.stopPropagation();
         this.toggleFavorite(article);
       });
@@ -304,6 +341,12 @@ const App = {
     const readBtn = card.querySelector('.read-article-btn');
     if (readBtn) {
       readBtn.addEventListener('click', (e) => {
+        // Check authentication
+        if (typeof Auth !== 'undefined' && !Auth.isAuthenticated()) {
+          window.location.href = 'index.html';
+          return;
+        }
+        
         e.stopPropagation(); // Prevent card click from also firing
         const articleIndex = readBtn.getAttribute('data-article-index');
         if (articleIndex !== null) {
@@ -373,6 +416,12 @@ const App = {
    * Toggle between news and favorites view
    */
   toggleFavorites() {
+    // Check authentication
+    if (typeof Auth !== 'undefined' && !Auth.isAuthenticated()) {
+      window.location.href = 'index.html';
+      return;
+    }
+    
     this.showingFavorites = !this.showingFavorites;
     
     const newsContainer = document.getElementById('newsContainer');
@@ -422,6 +471,12 @@ script.js:308 Navigating to: news.html?id=1
    * Display favorites
    */
   displayFavorites() {
+    // Check authentication
+    if (typeof Auth !== 'undefined' && !Auth.isAuthenticated()) {
+      window.location.href = 'index.html';
+      return;
+    }
+    
     if (typeof Favorites === 'undefined') {
       console.error('Favorites module not available');
       return;

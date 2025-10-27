@@ -8,12 +8,15 @@ const cache = require('../lib/cache');
 const { analyzeSentiment } = require('../lib/utils');
 const { getAIResponse } = require('../lib/ai');
 
+// Import authentication middleware
+const { authenticateToken } = require('./auth');
+
 const router = express.Router();
 
 /**
  * POST /analyze - Analyze article with AI
  */
-router.post('/', async (req, res, next) => {
+router.post('/', authenticateToken, async (req, res, next) => {
   try {
     const { articleId, text, question } = req.body;
 
@@ -59,7 +62,7 @@ router.post('/', async (req, res, next) => {
 /**
  * POST /analyze/translate - Translate article content
  */
-router.post('/translate', async (req, res, next) => {
+router.post('/translate', authenticateToken, async (req, res, next) => {
   try {
     const { text, language } = req.body;
 

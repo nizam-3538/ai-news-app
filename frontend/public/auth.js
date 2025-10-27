@@ -17,17 +17,48 @@ const Auth = {
   // Initialize authentication
   init() {
     console.log('🔐 Auth module initialized');
-    // Removed: Force a dummy login for direct dashboard access
-    /*
-    this.setCurrentUser({
-      id: 'dummy-user-id',
-      username: 'GuestUser',
-      email: 'guest@example.com',
-      createdAt: new Date().toISOString(),
-      lastLogin: new Date().toISOString()
-    }, 'dummy-token', true); // 'true' for rememberMe to keep it persistent
-    */
     this.updateUI();
+  },
+  
+  /**
+   * Check if user is authenticated
+   * @returns {boolean} True if authenticated
+   */
+  isAuthenticated() {
+    try {
+      const userData = localStorage.getItem(this.CURRENT_USER_KEY);
+      const expiry = localStorage.getItem(this.CURRENT_USER_KEY + '_expiry');
+      
+      if (!userData) return false;
+      
+      // Check expiry
+      if (expiry && new Date().getTime() > parseInt(expiry)) {
+        this.logout();
+        return false;
+      }
+      
+      return true;
+    } catch (error) {
+      console.error('Error checking authentication:', error);
+      return false;
+    }
+  },
+  
+  /**
+   * Redirect to login page if not authenticated
+   * @param {string} redirectUrl - Optional URL to redirect to after login
+   */
+  requireAuth(redirectUrl = null) {
+    if (!this.isAuthenticated()) {
+      // Store the intended destination
+      if (redirectUrl) {
+        localStorage.setItem('postLoginRedirect', redirectUrl);
+      }
+      // Redirect to login page
+      window.location.href = 'index.html';
+      return false;
+    }
+    return true;
   },
   
   /**
@@ -193,7 +224,9 @@ const Auth = {
     this.updateUI();
     
     // Redirect to home if on protected page
-    if (window.location.pathname.includes('profile') || window.location.pathname.includes('dashboard')) {
+    if (window.location.pathname.includes('main.html') || 
+        window.location.pathname.includes('news.html') || 
+        window.location.pathname.includes('profile')) {
       window.location.href = 'index.html';
     }
   },
