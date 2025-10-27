@@ -204,13 +204,48 @@
             chatMessages.appendChild(messageDiv);
             chatMessages.scrollTop = chatMessages.scrollHeight;
 
+            // Display bot response on the main article page with close button
             if (!isUser) {
-                const botResponseContainer = document.getElementById('bot-response-container');
-                const botResponseContent = document.getElementById('bot-response-content');
-                if (botResponseContainer && botResponseContent) {
-                    botResponseContainer.classList.remove('d-none');
-                    botResponseContent.innerHTML = sanitizedMessage;
-                }
+                displayBotResponseOnArticlePage(sanitizedMessage);
+            }
+        }
+
+        function displayBotResponseOnArticlePage(message) {
+            // Remove any existing bot response container
+            const existingContainer = document.getElementById('dynamic-bot-response-container');
+            if (existingContainer) {
+                existingContainer.remove();
+            }
+            
+            // Create new bot response container
+            const botResponseContainer = document.createElement('div');
+            botResponseContainer.id = 'dynamic-bot-response-container';
+            botResponseContainer.className = 'card mt-4';
+            botResponseContainer.innerHTML = `
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="bi bi-robot me-2"></i>
+                        AI Assistant Response
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" id="close-bot-response" aria-label="Close"></button>
+                </div>
+                <div class="card-body">
+                    <div class="response-content">${message}</div>
+                </div>
+            `;
+            
+            // Insert after the content section
+            const placeholder = document.getElementById('bot-response-container-placeholder');
+            if (placeholder) {
+                placeholder.parentNode.insertBefore(botResponseContainer, placeholder.nextSibling);
+            }
+            
+            // Add event listener to close button
+            const closeBtn = document.getElementById('close-bot-response');
+            if (closeBtn) {
+                closeBtn.addEventListener('click', function() {
+                    botResponseContainer.remove();
+                });
             }
         }
 
@@ -560,17 +595,8 @@ Content: ${currentArticle.content}`,
                         </div>
                     </div>
 
-                    <div id="bot-response-container" class="card mt-4 d-none">
-                        <div class="card-header">
-                            <h5 class="mb-0">
-                                <i class="bi bi-robot me-2"></i>
-                                AI Assistant Response
-                            </h5>
-                        </div>
-                        <div class="card-body" id="bot-response-content">
-                            <!-- Bot responses will be injected here -->
-                        </div>
-                    </div>
+                    <!-- Bot response container will be dynamically inserted here -->
+                    <div id="bot-response-container-placeholder"></div>
                 </div>
                 <div class="card-footer">
                     <div class="d-flex gap-2">
