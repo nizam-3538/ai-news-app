@@ -93,8 +93,11 @@ body {
   font-size: var(--font-size-base);
   line-height: 1.6;
   color: var(--text-primary);
-  background: linear-gradient(180deg, var(--background-color) 0%, var(--surface-color) 100%);
+  background: var(--background-color);
   transition: background-color 0.3s ease, color 0.3s ease;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
 /* Typography */
@@ -146,6 +149,32 @@ a:hover {
   position: sticky;
   top: 0;
   z-index: 100;
+  padding: 0.5rem 0;
+}
+
+.header-content {
+  max-width: var(--container-max-width);
+  margin: 0 auto;
+  padding: 0 var(--spacing-md);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.logo {
+  color: white;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.25rem 0;
+}
+
+.logo svg {
+  width: 20px;
+  height: 20px;
 }
 
 .navbar {
@@ -203,8 +232,9 @@ a:hover {
 
 /* Form Styles */
 .form {
-  max-width: 400px;
-  margin: var(--spacing-2xl) auto;
+  max-width: 450px;
+  width: 100%;
+  margin: auto;
   padding: var(--spacing-2xl);
   background-color: var(--card-background);
   border: 1px solid var(--border-color);
