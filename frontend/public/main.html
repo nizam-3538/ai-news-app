@@ -16,48 +16,54 @@
     <script src="script.js" defer></script>
 </head>
 <body>
+    <!-- Status Messages Container -->
+    <div id="statusMessages" class="position-fixed top-0 end-0 m-3" style="z-index: 1050;"></div>
+
     <!-- Header Navigation -->
     <header class="navbar navbar-expand-lg" role="banner">
         <div class="container-fluid">
-            <!-- Logo -->
             <a class="navbar-brand d-flex align-items-center" href="main.html">
-                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.94-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
                 </svg>
                 <span class="ms-2">AI News Aggregator</span>
             </a>
-
-            <!-- Search Bar -->
-            <div class="flex-grow-1 mx-3">
-                <input 
-                    type="search" 
-                    id="searchInput" 
-                    class="form-control" 
-                    placeholder="Search headlines, keywords..."
-                    aria-label="Search news articles"
-                    autocomplete="off"
-                >
-            </div>
-
-            <!-- Header Actions -->
-            <div class="d-flex align-items-center">
-                <!-- Theme Toggle -->
-                <button id="themeToggle" class="btn btn-secondary me-2" aria-label="Toggle dark mode" title="Toggle theme">
-                    <span id="themeText">Dark Mode</span>
-                </button>
-
-                <!-- User Actions -->
-                <div id="authSection" class="d-flex align-items-center">
-                    <!-- Not logged in -->
-                    <div id="guestActions">
-                        <a href="index.html" class="btn btn-secondary me-2">Login</a>
-                        <a href="signup.html" class="btn btn-primary">Sign Up</a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent" aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarContent">
+                <div class="d-flex flex-column flex-lg-row align-items-lg-center w-100">
+                    <!-- Search -->
+                    <div class="search-container w-100 me-lg-3 mb-3 mb-lg-0">
+                        <div class="input-group">
+                            <span class="input-group-text bg-white border-end-0">
+                                <i class="bi bi-search"></i>
+                            </span>
+                            <input type="text" id="searchInput" class="form-control border-start-0" placeholder="Search news..." aria-label="Search news">
+                            <button class="btn btn-outline-secondary" type="button" id="clearSearch">
+                                <i class="bi bi-x"></i>
+                            </button>
+                        </div>
                     </div>
-
-                    <!-- Logged in -->
-                    <div id="userActions" class="d-flex align-items-center hidden">
-                        <span id="userWelcome" class="text-secondary me-2" ><span style="color: azure;">Welcome</span>, <span id="username" style="color: azure;"></span></span>
-                        <button id="logoutBtn" class="btn btn-secondary">Logout</button>
+                    
+                    <!-- Action Buttons -->
+                    <div class="d-flex gap-2">
+                        <button id="favoritesToggle" class="btn btn-outline-primary">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
+                            </svg>
+                            Favorites
+                        </button>
+                        <button id="themeToggle" class="btn btn-outline-secondary">
+                            <span id="themeIcon">🌙</span>
+                            <span class="d-none d-lg-inline ms-1" id="themeText">Dark</span>
+                        </button>
+                        <button id="logoutBtn" class="btn btn-outline-danger">
+                            <i class="bi bi-box-arrow-right"></i>
+                            <span class="d-none d-lg-inline ms-1">Logout</span>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -180,7 +186,7 @@
         </div>
     </footer>
 
-    <!-- Bootstrap JS (optional, for components that need JS) -->
+    <!-- Bootstrap JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 
     <!-- JavaScript Modules -->

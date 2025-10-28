@@ -335,7 +335,7 @@ const App = {
     // Favorite button
     const favoriteBtn = card.querySelector('.favorite-btn');
     if (favoriteBtn) {
-      favoriteBtn.addEventListener('click', (e) => {
+      favoriteBtn.addEventListener('click', async (e) => {
         // Check authentication
         if (typeof Auth !== 'undefined' && !Auth.isAuthenticated()) {
           window.location.href = 'index.html';
@@ -343,7 +343,44 @@ const App = {
         }
         
         e.stopPropagation();
-        this.toggleFavorite(article);
+        
+        // Get current favorite status
+        const isCurrentlyFavorited = this.isFavorited(article.id);
+        
+        // Update UI immediately for better responsiveness
+        if (isCurrentlyFavorited) {
+          favoriteBtn.classList.remove('active', 'text-danger');
+          favoriteBtn.classList.add('text-muted');
+          favoriteBtn.innerHTML = '<i class="bi bi-heart"></i>';
+        } else {
+          favoriteBtn.classList.remove('text-muted');
+          favoriteBtn.classList.add('active', 'text-danger');
+          favoriteBtn.innerHTML = '<i class="bi bi-heart-fill"></i>';
+        }
+        
+        // Perform the actual favorite operation
+        try {
+          if (isCurrentlyFavorited) {
+            await Favorites.removeFavorite(article.id);
+          } else {
+            await Favorites.addFavorite(article);
+          }
+        } catch (error) {
+          console.error('Error toggling favorite:', error);
+          // Revert UI on error
+          if (isCurrentlyFavorited) {
+            favoriteBtn.classList.remove('text-muted');
+            favoriteBtn.classList.add('active', 'text-danger');
+            favoriteBtn.innerHTML = '<i class="bi bi-heart-fill"></i>';
+          } else {
+            favoriteBtn.classList.remove('active', 'text-danger');
+            favoriteBtn.classList.add('text-muted');
+            favoriteBtn.innerHTML = '<i class="bi bi-heart"></i>';
+          }
+        }
+        
+        // Update all favorite buttons across the UI
+        this.updateFavoriteButtons();
       });
     }
     
@@ -411,13 +448,16 @@ const App = {
     favoriteButtons.forEach(btn => {
       const articleId = btn.getAttribute('data-article-id');
       const isFavorited = this.isFavorited(articleId);
-      const svgPath = btn.querySelector('svg');
       
-      btn.classList.toggle('active', isFavorited);
-      
-      // Update SVG fill attribute
-      if (svgPath) {
-        svgPath.setAttribute('fill', isFavorited ? 'currentColor' : 'none');
+      // Update button classes and icon
+      if (isFavorited) {
+        btn.classList.remove('text-muted');
+        btn.classList.add('active', 'text-danger');
+        btn.innerHTML = '<i class="bi bi-heart-fill"></i>';
+      } else {
+        btn.classList.remove('active', 'text-danger');
+        btn.classList.add('text-muted');
+        btn.innerHTML = '<i class="bi bi-heart"></i>';
       }
     });
   },

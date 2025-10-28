@@ -585,19 +585,35 @@ const Favorites = {
   /**
    * Show notification
    * @param {string} message - Notification message
-   * @param {string} type - Notification type (success, error, info)
+   * @param {string} type - Notification type (success, error, info, warning)
    */
   showNotification(message, type = 'info') {
     // Try to use existing notification system
     const statusMessages = document.getElementById('statusMessages');
     if (statusMessages) {
-      statusMessages.className = `alert alert-${type}`;
-      statusMessages.textContent = message;
-      statusMessages.classList.remove('hidden');
+      // Clear any existing notifications
+      statusMessages.innerHTML = '';
       
+      // Create alert element
+      const alert = document.createElement('div');
+      alert.className = `alert alert-${type} alert-dismissible fade show`;
+      alert.setAttribute('role', 'alert');
+      alert.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      `;
+      
+      // Add to container
+      statusMessages.appendChild(alert);
+      
+      // Auto hide after 3 seconds
       setTimeout(() => {
-        statusMessages.classList.add('hidden');
+        if (alert && alert.parentNode) {
+          const bsAlert = new bootstrap.Alert(alert);
+          bsAlert.close();
+        }
       }, 3000);
+      
       return;
     }
     
