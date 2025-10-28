@@ -50,11 +50,11 @@
                     
                     <!-- Action Buttons -->
                     <div class="d-flex gap-2">
-                        <button id="themeToggle" class="btn btn-outline-secondary bg-white" onmouseover="this.classList.add('btn-primary')" onmouseout="this.classList.remove('btn-primary')">
+                        <button id="themeToggle" class="btn btn-outline-secondary bg-white" onmouseover="this.classList.add('btn-primary'); this.classList.remove('bg-white');" onmouseout="this.classList.remove('btn-primary'); this.classList.add('bg-white');">
                             <span id="themeIcon"></span>
                             <span class="d-none d-lg-inline ms-1" id="themeText">Dark</span>
                         </button>
-                        <button id="logoutBtn" class="btn btn-outline-danger bg-white" onmouseover="this.classList.add('btn-danger')" onmouseout="this.classList.remove('btn-danger')">
+                        <button id="logoutBtn" class="btn btn-outline-danger bg-white" onmouseover="this.classList.remove('btn-outline-danger', 'bg-white'); this.classList.add('btn-danger');" onmouseout="this.classList.add('btn-outline-danger', 'bg-white'); this.classList.remove('btn-danger');">
                             <i class="bi bi-box-arrow-right"></i>
                             <span class="d-none d-lg-inline ms-1">Logout</span>
                         </button>
@@ -91,6 +91,7 @@
 
             <!-- Action Buttons -->
             <div class="d-flex align-items-center">
+                <span id="welcomeMessage" class="text-muted me-3 d-none d-lg-inline"></span>
                 <button id="refreshBtn" class="btn btn-outline-secondary me-2" aria-label="Refresh news feed">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M23 4v6h-6"></path>
@@ -214,6 +215,13 @@
                     localStorage.removeItem('currentUser_expiry');
                     window.location.href = 'index.html';
                     return false;
+                }
+                
+                // Update welcome message with user's name
+                const welcomeMessage = document.getElementById('welcomeMessage');
+                if (welcomeMessage && user.username) {
+                    welcomeMessage.textContent = `Welcome, ${user.username}`;
+                    welcomeMessage.classList.remove('d-none');
                 }
                 
                 return true;
