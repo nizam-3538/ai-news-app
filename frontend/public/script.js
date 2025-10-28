@@ -206,7 +206,7 @@ const App = {
     const { highlightMatches = null, index = 0 } = options;
 
     const card = document.createElement('article');
-    card.className = 'card news-card card-clickable';
+    card.className = 'card news-card h-100';
     card.setAttribute('role', 'listitem');
     card.setAttribute('data-article-id', article.id);
     card.setAttribute('data-article-index', index);
@@ -221,16 +221,19 @@ const App = {
 
     // Get sentiment info
     const sentiment = article.sentiment || 'neutral';
-    let sentimentEmoji;
+    let sentimentClass, sentimentText;
     switch (sentiment) {
       case 'positive':
-        sentimentEmoji = '🟢';
+        sentimentClass = 'sentiment-positive';
+        sentimentText = 'Positive';
         break;
       case 'negative':
-        sentimentEmoji = '🔴';
+        sentimentClass = 'sentiment-negative';
+        sentimentText = 'Negative';
         break;
       default:
-        sentimentEmoji = '🟡';
+        sentimentClass = 'sentiment-neutral';
+        sentimentText = 'Neutral';
     }
 
     // Highlight matches if provided
@@ -243,49 +246,57 @@ const App = {
       : this.escapeHtml(article.summary || 'No summary available.');
     
     card.innerHTML = `
-      <div class="card-header">
-        <div class="sentiment-badge sentiment-${sentiment}" title="${sentiment} sentiment">
-          ${sentimentEmoji} ${sentiment.charAt(0).toUpperCase() + sentiment.slice(1)}
-        </div>
+      <div class="card-header bg-light d-flex justify-content-between align-items-center">
+        <span class="badge ${sentimentClass} d-flex align-items-center gap-1">
+          <span class="sentiment-indicator"></span>
+          ${sentimentText}
+        </span>
         
-        <button class="favorite-btn ${this.isFavorited(article.id) ? 'active' : ''}" 
+        <button class="favorite-btn btn btn-sm ${this.isFavorited(article.id) ? 'active text-danger' : 'text-muted'}" 
                 aria-label="Toggle favorite" 
                 data-article-id="${article.id}">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="${this.isFavorited(article.id) ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
-          </svg>
+          <i class="bi bi-heart${this.isFavorited(article.id) ? '-fill' : ''}"></i>
         </button>
       </div>
       
-      <div class="card-content">
-        <h3 class="card-title">${title}</h3>
+      <div class="card-body d-flex flex-column gap-2">
+        <h3 class="card-title h5 mb-0">${title}</h3>
         
-        <div class="card-meta">
-          <span title="Source">📰 ${this.escapeHtml(article.source)}</span>
-          <span title="Author">✍️ ${this.escapeHtml(article.author || 'Unknown')}</span>
-          <span title="Published">📅 ${publishedDate}</span>
+        <div class="d-flex flex-wrap gap-2 text-muted small">
+          <span title="Source" class="d-flex align-items-center gap-1">
+            <i class="bi bi-building"></i>
+            ${this.escapeHtml(article.source)}
+          </span>
+          <span title="Author" class="d-flex align-items-center gap-1">
+            <i class="bi bi-person"></i>
+            ${this.escapeHtml(article.author || 'Unknown')}
+          </span>
+          <span title="Published" class="d-flex align-items-center gap-1">
+            <i class="bi bi-calendar"></i>
+            ${publishedDate}
+          </span>
         </div>
         
-        <p class="card-content">${summary}</p>
+        <p class="card-text text-muted flex-grow-1">${summary}</p>
         
         ${article.categories && article.categories.length > 0 ? `
-          <div style="margin-top: var(--spacing-sm);">
+          <div class="d-flex flex-wrap gap-1 mt-2">
             ${article.categories.slice(0, 3).map(cat => `
-              <span class="btn btn-sm" style="padding: 2px 8px; margin-right: 4px; background-color: var(--surface-color); border: 1px solid var(--border-color); border-radius: 12px; font-size: var(--font-size-xs);">
+              <span class="badge bg-secondary bg-opacity-10 text-secondary small">
                 ${this.escapeHtml(cat)}
               </span>
             `).join('')}
-            ${article.categories.length > 3 ? '<span class="text-muted">...</span>' : ''}
+            ${article.categories.length > 3 ? '<span class="badge bg-light text-muted">...</span>' : ''}
           </div>
         ` : ''}
       </div>
       
-      <div class="card-footer">
-        <button class="btn btn-primary btn-sm read-article-btn" data-article-id="${article.id}">
+      <div class="card-footer bg-light d-flex gap-2">
+        <button class="btn btn-primary btn-sm read-article-btn flex-grow-1" data-article-id="${article.id}">
           Read Article
         </button>
-        <a href="${article.link}" target="_blank" rel="noopener" class="btn btn-secondary btn-sm">
-          Original
+        <a href="${article.link}" target="_blank" rel="noopener" class="btn btn-outline-secondary btn-sm">
+          <i class="bi bi-box-arrow-up-right"></i>
         </a>
       </div>
     `;
