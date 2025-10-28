@@ -40,7 +40,7 @@
             </div>
 
             <!-- Status Messages -->
-            <div id="statusMessage" class="alert hidden" role="alert" aria-live="polite"></div>
+            <div id="statusMessage" class="alert d-none" role="alert" aria-live="polite"></div>
 
             <!-- Username Field -->
             <div class="mb-3">
@@ -60,7 +60,7 @@
                 <div id="usernameHelp" class="form-text">
                     3-50 characters, letters, numbers, and underscores only
                 </div>
-                <div id="usernameError" class="invalid-feedback hidden"></div>
+                <div id="usernameError" class="invalid-feedback"></div>
             </div>
 
             <!-- Email Field -->
@@ -76,12 +76,12 @@
                     autocomplete="email"
                     aria-describedby="emailError"
                 >
-                <button type="button" id="sendOtpBtn" class="btn btn-secondary" style="width: 100%; margin-top: 1rem; padding: 0.75rem; font-weight: 500;">Send OTP</button>
-                <div id="emailError" class="invalid-feedback hidden"></div>
+                <button type="button" id="sendOtpBtn" class="btn btn-secondary w-100 mt-2">Send OTP</button>
+                <div id="emailError" class="invalid-feedback"></div>
             </div>
 
             <!-- OTP Field -->
-            <div id="otpSection" class="mb-3 hidden">
+            <div id="otpSection" class="mb-3 d-none">
                 <label for="otp" class="form-label">Email OTP</label>
                 <input 
                     type="text" 
@@ -93,13 +93,13 @@
                     autocomplete="one-time-code"
                     aria-describedby="otpError"
                 >
-                <button type="button" id="verifyOtpBtn" class="btn btn-primary" style="width: 100%; margin-top: 0.5rem;">Verify OTP</button>
-                <div id="otpError" class="invalid-feedback hidden"></div>
-                <div id="otpSuccess" class="alert alert-success hidden mt-2">OTP verified successfully!</div>
+                <button type="button" id="verifyOtpBtn" class="btn btn-primary w-100 mt-2">Verify OTP</button>
+                <div id="otpError" class="invalid-feedback"></div>
+                <div id="otpSuccess" class="alert alert-success d-none mt-2">OTP verified successfully!</div>
             </div>
 
             <!-- Password Field -->
-            <div id="passwordSection" class="mb-3 hidden">
+            <div id="passwordSection" class="mb-3 d-none">
                 <label for="password" class="form-label">Password</label>
                 <div class="input-group">
                     <input 
@@ -124,10 +124,10 @@
                 <div id="passwordHelp" class="form-text">
                     At least 8 characters with uppercase, lowercase, and number
                 </div>
-                <div id="passwordError" class="invalid-feedback hidden"></div>
+                <div id="passwordError" class="invalid-feedback"></div>
                 
                 <!-- Password Strength Indicator -->
-                <div id="passwordStrength" class="hidden mt-2">
+                <div id="passwordStrength" class="d-none mt-2">
                     <div class="d-flex gap-1 mb-1">
                         <div id="strength1" class="strength-bar flex-grow-1"></div>
                         <div id="strength2" class="strength-bar flex-grow-1"></div>
@@ -139,7 +139,7 @@
             </div>
 
             <!-- Confirm Password Field -->
-            <div id="confirmPasswordSection" class="mb-3 hidden">
+            <div id="confirmPasswordSection" class="mb-3 d-none">
                 <label for="confirmPassword" class="form-label">Confirm Password</label>
                 <div class="input-group">
                     <input 
@@ -161,11 +161,11 @@
                         👁️
                     </button>
                 </div>
-                <div id="confirmPasswordError" class="invalid-feedback hidden"></div>
+                <div id="confirmPasswordError" class="invalid-feedback"></div>
             </div>
 
             <!-- Terms and Privacy -->
-            <div id="termsSection" class="mb-3 form-check hidden">
+            <div id="termsSection" class="mb-3 form-check d-none">
                 <input 
                     type="checkbox" 
                     id="agreeTerms" 
@@ -180,10 +180,10 @@
             </div>
 
             <!-- Submit Button -->
-            <div id="submitSection" class="d-grid hidden">
+            <div id="submitSection" class="d-grid d-none">
                 <button type="submit" id="submitBtn" class="btn btn-primary">
                     <span id="submitText">Create Account</span>
-                    <span id="submitSpinner" class="spinner-border spinner-border-sm hidden" role="status" aria-hidden="true"></span>
+                    <span id="submitSpinner" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
                 </button>
             </div>
             
@@ -237,7 +237,7 @@
         .strength-bar.good { background-color: var(--bs-info); }
         .strength-bar.strong { background-color: var(--bs-success); }
         
-        .hidden { display: none !important; }
+        .d-none { display: none !important; }
     </style>
     
     <script>
@@ -361,7 +361,7 @@
                 const result = await response.json();
 
                 if (response.ok) {
-                    otpSection.classList.remove('hidden');
+                    otpSection.classList.remove('d-none');
                     otpInput.focus();
                     showStatusMessage('An OTP has been sent to your email.', 'success');
                 } else {
@@ -407,14 +407,14 @@
 
                 if (response.ok) {
                     // Show success message
-                    otpSuccess.classList.remove('hidden');
+                    otpSuccess.classList.remove('d-none');
                     showStatusMessage('OTP verified successfully! Please create your password.', 'success');
                     
                     // Show password fields
-                    passwordSection.classList.remove('hidden');
-                    confirmPasswordSection.classList.remove('hidden');
-                    termsSection.classList.remove('hidden');
-                    submitSection.classList.remove('hidden');
+                    passwordSection.classList.remove('d-none');
+                    confirmPasswordSection.classList.remove('d-none');
+                    termsSection.classList.remove('d-none');
+                    submitSection.classList.remove('d-none');
                     
                     // Focus on password field
                     passwordInput.focus();
@@ -485,7 +485,7 @@
             const inputElement = document.getElementById(fieldId);
             
             errorElement.textContent = message;
-            errorElement.classList.remove('hidden');
+            errorElement.style.display = 'block';
             inputElement.classList.add('is-invalid'); // Bootstrap validation class
         }
         
@@ -493,7 +493,7 @@
             const errorElement = document.getElementById(fieldId + 'Error');
             const inputElement = document.getElementById(fieldId);
             
-            errorElement.classList.add('hidden');
+            errorElement.style.display = 'none';
             inputElement.classList.remove('is-invalid'); // Bootstrap validation class
         }
         
@@ -503,13 +503,13 @@
             clearError('password');
             clearError('confirmPassword');
             clearError('otp');
-            statusMessage.classList.add('hidden');
+            statusMessage.classList.add('d-none');
         }
         
         function showStatusMessage(message, type = 'danger') { // Changed default to danger for errors
             statusMessage.className = `alert alert-${type}`;
             statusMessage.textContent = message;
-            statusMessage.classList.remove('hidden');
+            statusMessage.classList.remove('d-none');
             statusMessage.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }
         
@@ -517,10 +517,10 @@
             submitBtn.disabled = loading;
             if (loading) {
                 submitText.textContent = 'Creating Account...';
-                submitSpinner.classList.remove('hidden');
+                submitSpinner.classList.remove('d-none');
             } else {
                 submitText.textContent = 'Create Account';
-                submitSpinner.classList.add('hidden');
+                submitSpinner.classList.add('d-none');
             }
         }
         
@@ -529,11 +529,11 @@
             const strengthText = document.getElementById('strengthText');
             
             if (!password) {
-                strengthIndicator.classList.add('hidden');
+                strengthIndicator.classList.add('d-none');
                 return;
             }
             
-            strengthIndicator.classList.remove('hidden');
+            strengthIndicator.classList.remove('d-none');
             const strength = getPasswordStrength(password);
             
             // Reset all bars
