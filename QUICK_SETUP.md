@@ -91,18 +91,7 @@ Make sure these are set in your hosting dashboard:
 
 ```bash
 # Required for OAuth
-GOOGLE_CLIENT_ID=your_google_client_id.apps.googleusercontent.com
-GOOGLE_CLIENT_SECRET=your_google_client_secret
 
-# Already working
-MONGODB_URI=mongodb+srv://jhonsimon4132_db_user:mAn9n1eL31FGSbaC@cluster1.zdxvbhh.mongodb.net/ai-news-aggregator?retryWrites=true&w=majority&appName=Cluster1
-GEMINI_API_KEY=AIzaSyAg4SK4RtMR4Ghe3mZ2iL2gfso3v8tJnVQ
-NEWSDATA_API_KEY=pub_43618efa2bbc4becb20abc69832a216d
-JWT_SECRET=3ad5be881d732cbde7afe7b6e404d8f7653b82394c453483421f894ad583078756ee66e5ef1774835d57cc8c93f3b8bfc8a78766e7f62c2e190a9d1645b1ce9a
-
-# Update for production
-ALLOWED_ORIGINS=https://your-frontend-url.vercel.app
-FRONTEND_URL=https://your-frontend-url.vercel.app
 ```
 
 ---
