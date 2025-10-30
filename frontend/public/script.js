@@ -42,8 +42,8 @@ const App = {
       refreshBtn.addEventListener('click', () => this.loadNews(true));
     }
     
-    // Favorites toggle
-    const favoritesToggle = document.getElementById('favoritesToggle');
+    // Favorites toggle - check for both possible IDs
+    const favoritesToggle = document.getElementById('favoritesToggle') || document.getElementById('favoritesToggleBottom');
     if (favoritesToggle) {
       favoritesToggle.addEventListener('click', this.toggleFavorites.bind(this));
     }
@@ -476,7 +476,8 @@ const App = {
     
     const newsContainer = document.getElementById('newsContainer');
     const favoritesSection = document.getElementById('favoritesSection');
-    const favoritesToggle = document.getElementById('favoritesToggle');
+    // Check for both possible IDs
+    const favoritesToggle = document.getElementById('favoritesToggle') || document.getElementById('favoritesToggleBottom');
     
     console.log('📍 Elements found:', {
       newsContainer: !!newsContainer,
