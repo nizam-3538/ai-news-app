@@ -786,4 +786,97 @@ router.get('/by-url', authenticateToken, async (req, res) => {
   }
 });
 
+/**
+ * GET /news/by-index
+ * Fetch a specific news article by index position in user's favorites
+ * Query parameters:
+ * - index: The index position of the article in user's favorites
+ */
+router.get('/by-index', authenticateToken, async (req, res) => {
+  const index = parseInt(req.query.index);
+  
+  if (isNaN(index) || index < 0) {
+    return res.status(400).json({
+      success: false,
+      error: 'Valid index parameter is required'
+    });
+  }
+  
+  console.log(`Fetching news article at index: ${index} for user: ${req.user.id}`);
+  
+  try {
+    // First get user's favorites
+    const Favorite = require('../models/Favorite');
+    const favorites = await Favorite.findByUserId(req.user.id, { limit: 500 });
+    
+    if (index >= favorites.length) {
+      return res.status(404).json({
+        success: false,
+        error: 'Article index out of bounds'
+      });
+    }
+    
+    // Get the favorite at the specified index
+    const favorite = favorites[index];
+    console.log(`Found favorite at index ${index}: ${favorite.title}`);
+    
+    // Now fetch all articles to find the matching one
+    let articles = await fetchAllNews('', 200, 3);
+    
+    // If no articles from APIs, fallback to RSS feeds
+    if (articles.length === 0) {
+      console.log('No articles from APIs, falling back to RSS feeds for article lookup...');
+      try {
+        const rssArticles = await fetchAllFeeds();
+        articles = rssArticles;
+      } catch (rssError) {
+        console.error('RSS fallback also failed:', rssError.message);
+      }
+    }
+    
+    // Find article by ID or URL
+    const article = articles.find(a => 
+      a.id === favorite.articleId || 
+      a.link === favorite.link ||
+      a.link.includes(favorite.link) ||
+      favorite.link.includes(a.link)
+    );
+    
+    if (!article) {
+      console.log(`Article not found in current news feed`);
+      // Return the stored favorite data as fallback
+      return res.json({
+        success: true,
+        data: {
+          id: favorite.articleId,
+          title: favorite.title,
+          link: favorite.link,
+          summary: favorite.summary,
+          source: favorite.source,
+          author: favorite.author,
+          publishedAt: favorite.publishedAt,
+          categories: favorite.categories,
+          sentiment: favorite.sentiment,
+          content: favorite.summary || 'Content not available'
+        }
+      });
+    }
+    
+    console.log(`Found article: ${article.title}`);
+    
+    // Return the article data
+    res.json({
+      success: true,
+      data: article
+    });
+    
+  } catch (error) {
+    console.error('Error fetching news article by index:', error.message);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch news article'
+    });
+  }
+});
+
 module.exports = router;

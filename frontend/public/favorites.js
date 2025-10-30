@@ -3,17 +3,103 @@
  * Handles saving and managing user's favorite articles using dual storage:
  * - MongoDB (remote) for authenticated users
  * - localStorage (local) for all users as backup/offline support
+ * - Indexed array for fast access and navigation
  */
 
 const Favorites = {
-  // Storage key
+  // Storage keys
   FAVORITES_KEY: 'ai_news_favorites',
+  FAVORITES_INDEX_KEY: 'ai_news_favorites_index', // New key for index-based storage
   API_BASE_URL: 'https://ai-news-app-backend.vercel.app', // Update for production
   
   // Initialize favorites
   init() {
-    console.log('⭐ Favorites module initialized with dual storage');
+    console.log('⭐ Favorites module initialized with dual storage and indexing');
     this.syncWithServer();
+    this.initializeIndex();
+  },
+  
+  /**
+   * Initialize the index-based favorites array
+   */
+  initializeIndex() {
+    try {
+      // Load existing favorites
+      const favorites = this.getFavorites();
+      
+      // Create index mapping (articleId -> index)
+      const indexMap = {};
+      favorites.forEach((fav, index) => {
+        indexMap[fav.id] = index;
+      });
+      
+      // Save index map
+      localStorage.setItem(this.FAVORITES_INDEX_KEY, JSON.stringify(indexMap));
+      console.log(`✅ Initialized favorites index with ${Object.keys(indexMap).length} entries`);
+    } catch (error) {
+      console.error('Error initializing favorites index:', error);
+    }
+  },
+  
+  /**
+   * Update the index when favorites change
+   * @param {Array} favorites - Current favorites array
+   */
+  updateIndex(favorites) {
+    try {
+      const indexMap = {};
+      favorites.forEach((fav, index) => {
+        indexMap[fav.id] = index;
+      });
+      localStorage.setItem(this.FAVORITES_INDEX_KEY, JSON.stringify(indexMap));
+      console.log(`✅ Updated favorites index with ${Object.keys(indexMap).length} entries`);
+    } catch (error) {
+      console.error('Error updating favorites index:', error);
+    }
+  },
+  
+  /**
+   * Get the index of a favorite article
+   * @param {string} articleId - Article ID
+   * @returns {number|null} Index of the article or null if not found
+   */
+  getFavoriteIndex(articleId) {
+    try {
+      const indexMap = JSON.parse(localStorage.getItem(this.FAVORITES_INDEX_KEY) || '{}');
+      return indexMap[articleId] !== undefined ? indexMap[articleId] : null;
+    } catch (error) {
+      console.error('Error getting favorite index:', error);
+      return null;
+    }
+  },
+  
+  /**
+   * Get all favorites with their indices
+   * @returns {Array} Array of favorites with index information
+   */
+  getFavoritesWithIndices() {
+    try {
+      const favorites = this.getFavorites();
+      return favorites.map((fav, index) => ({
+        ...fav,
+        index: index
+      }));
+    } catch (error) {
+      console.error('Error getting favorites with indices:', error);
+      return [];
+    }
+  },
+  
+  /**
+   * Get favorite by index
+   * @param {number} index - Index position
+   * @returns {Object|null} Favorite article or null
+   */
+  getFavoriteByIndex(index) {
+    if (typeof index !== 'number' || index < 0) return null;
+    
+    const favorites = this.getFavorites();
+    return index < favorites.length ? favorites[index] : null;
   },
   
   /**
@@ -95,6 +181,9 @@ const Favorites = {
       
       // Update local storage
       localStorage.setItem(this.FAVORITES_KEY, JSON.stringify(mergedFavorites));
+      
+      // Update index
+      this.updateIndex(mergedFavorites);
       
       console.log(`✅ Synced ${mergedFavorites.length} favorites with server`);
       
@@ -194,6 +283,9 @@ const Favorites = {
       favorites.unshift(favoriteArticle);
       localStorage.setItem(this.FAVORITES_KEY, JSON.stringify(favorites));
       
+      // Update index
+      this.updateIndex(favorites);
+      
       // Try to add to server if authenticated
       if (this.isAuthenticated()) {
         try {
@@ -248,6 +340,9 @@ const Favorites = {
       // Remove from local storage immediately
       localStorage.setItem(this.FAVORITES_KEY, JSON.stringify(updatedFavorites));
       
+      // Update index
+      this.updateIndex(updatedFavorites);
+      
       // Try to remove from server if authenticated
       if (this.isAuthenticated()) {
         try {
@@ -299,6 +394,9 @@ const Favorites = {
     try {
       // Clear local storage immediately
       localStorage.setItem(this.FAVORITES_KEY, JSON.stringify([]));
+      
+      // Clear index
+      localStorage.setItem(this.FAVORITES_INDEX_KEY, JSON.stringify({}));
       
       // Try to clear server favorites if authenticated
       if (this.isAuthenticated()) {
@@ -425,6 +523,9 @@ const Favorites = {
       
       localStorage.setItem(this.FAVORITES_KEY, JSON.stringify(allFavorites));
       
+      // Update index
+      this.updateIndex(allFavorites);
+      
       console.log(`✅ Imported ${addedCount} new favorites`);
       this.showNotification(`Imported ${addedCount} new favorites`, 'success');
       
@@ -499,6 +600,9 @@ const Favorites = {
     card.className = 'card news-card';
     card.setAttribute('role', 'listitem');
     
+    // Get favorite index for navigation
+    const favoriteIndex = favorite.favoriteIndex !== undefined ? favorite.favoriteIndex : this.getFavoriteIndex(favorite.id);
+    
     // Format date
     const addedDate = new Date(favorite.addedAt).toLocaleDateString('en-US', {
       month: 'short',
@@ -533,6 +637,7 @@ const Favorites = {
           <span>📰 ${this.escapeHtml(favorite.source)}</span>
           <span>📅 ${publishedDate}</span>
           <span>⭐ Added ${addedDate}</span>
+          ${favoriteIndex !== null ? `<span>🔢 Index #${favoriteIndex}</span>` : ''}
         </div>
         
         <p class="card-content">${this.escapeHtml(favorite.summary || 'No summary available.')}</p>

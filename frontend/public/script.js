@@ -329,6 +329,11 @@ const App = {
         console.log('Article ID:', article.id);
         console.log('Article URL:', article.link);
         console.log('Article ID type:', typeof article.id);
+        
+        // Check if this is a favorite article and get its index
+        const favoriteIndex = typeof Favorites !== 'undefined' ? Favorites.getFavoriteIndex(article.id) : null;
+        console.log('Favorite index:', favoriteIndex);
+        
         if (article.link !== null) {
           // Pass the article URL instead of ID for more reliable matching
           const encodedUrl = encodeURIComponent(article.link);
@@ -414,6 +419,11 @@ const App = {
         console.log('Article object:', article);
         console.log('Article ID:', article.id);
         console.log('Article URL:', article.link);
+        
+        // Check if this is a favorite article and get its index
+        const favoriteIndex = typeof Favorites !== 'undefined' ? Favorites.getFavoriteIndex(article.id) : null;
+        console.log('Favorite index:', favoriteIndex);
+        
         if (article.link !== null) {
           // Pass the article URL instead of ID for more reliable matching
           const encodedUrl = encodeURIComponent(article.link);
@@ -544,8 +554,6 @@ const App = {
   },
   
   /**
-   * https://www.bbc.com/news/articles/czewkn06y1no?at_medium=RSS&at_campaign=rss
-script.js:308 Navigating to: news.html?id=1
    * Display favorites
    */
   displayFavorites() {
@@ -585,13 +593,19 @@ script.js:308 Navigating to: news.html?id=1
 
     // Clear and populate favorites
     favoritesList.innerHTML = '';
-    favorites.forEach(favorite => {
+    favorites.forEach((favorite, index) => {
       // Try to get full article data
       const fullArticle = this.articles.find(a => a.id === favorite.id);
       const articleToRender = fullArticle || favorite;
       
+      // Add index information to the article object
+      const articleWithIndex = {
+        ...articleToRender,
+        favoriteIndex: index
+      };
+      
       // Use the createFavoriteCard method from Favorites module
-      const card = Favorites.createFavoriteCard(articleToRender, {
+      const card = Favorites.createFavoriteCard(articleWithIndex, {
         showRemoveButton: true,
         onRemove: (articleId) => {
           Favorites.removeFavorite(articleId);

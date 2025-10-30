@@ -176,6 +176,18 @@
             console.log('Parsed ID from URL params:', id);
             return id;
         }
+        
+        /**
+         * Get article index from favorites if this is a favorite article
+         * @param {string} articleId - Article ID
+         * @returns {number|null} Index of the article in favorites or null
+         */
+        function getFavoriteArticleIndex(articleId) {
+            if (typeof Favorites !== 'undefined') {
+                return Favorites.getFavoriteIndex(articleId);
+            }
+            return null;
+        }
 
         function showError(message) {
             document.getElementById('article-content').classList.add('d-none');
@@ -427,6 +439,24 @@ Content: ${currentArticle.content}`,
                         const data = await response.json();
                         if (data.success) {
                             console.log('Found article by URL:', data.data);
+                            return data.data;
+                        }
+                    }
+                }
+                
+                // Try to get article from favorites by index if this is a favorite
+                const favoriteIndex = getFavoriteArticleIndex(articleId);
+                if (favoriteIndex !== null) {
+                    console.log('Article found in favorites at index:', favoriteIndex);
+                    // Try to fetch by index
+                    const response = await fetch(`https://ai-news-app-backend.vercel.app/news/by-index?index=${favoriteIndex}`, {
+                        headers: getAuthHeaders()
+                    });
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        if (data.success) {
+                            console.log('Found article by index:', data.data);
                             return data.data;
                         }
                     }
