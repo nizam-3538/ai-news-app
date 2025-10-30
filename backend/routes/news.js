@@ -680,14 +680,28 @@ router.get('/:id', authenticateToken, async (req, res) => {
         }
       }
       
-      // Find article by ID
-      const article = articles.find(a => a.id === id);
+      console.log(`Searching for article with ID: "${id}"`);
+      console.log(`Available article IDs:`, articles.map(a => a.id).slice(0, 10)); // Show first 10 IDs
+      
+      // Try exact match first
+      let article = articles.find(a => a.id === id);
+      
+      // If not found, try loose matching
+      if (!article) {
+        article = articles.find(a => {
+          const match = String(a.id).includes(String(id)) || String(id).includes(String(a.id));
+          if (match) {
+            console.log(`Loose match found: "${a.id}" with "${id}"`);
+          }
+          return match;
+        });
+      }
       
       if (!article) {
-        console.log(`Article with ID ${id} not found`);
+        console.log(`Article with ID ${id} not found after searching ${articles.length} articles`);
         return res.status(404).json({
           success: false,
-          error: 'Article not found'
+          error: `Article not found. Searched for ID: "${id}" in ${articles.length} articles`
         });
       }
       
@@ -699,6 +713,69 @@ router.get('/:id', authenticateToken, async (req, res) => {
         data: article
       });
     }
+    
+  } catch (error) {
+    console.error('Error fetching news article:', error.message);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch news article'
+    });
+  }
+});
+
+/**
+ * GET /news/by-url
+ * Fetch a specific news article by URL
+ * Query parameters:
+ * - url: The URL of the article to fetch
+ */
+router.get('/by-url', authenticateToken, async (req, res) => {
+  const url = req.query.url;
+  
+  if (!url) {
+    return res.status(400).json({
+      success: false,
+      error: 'URL parameter is required'
+    });
+  }
+  
+  console.log(`Fetching news article with URL: ${url}`);
+  
+  try {
+    // Fetch all articles
+    let articles = await fetchAllNews('', 200, 3);
+    
+    // If no articles from APIs, fallback to RSS feeds
+    if (articles.length === 0) {
+      console.log('No articles from APIs, falling back to RSS feeds for article lookup...');
+      try {
+        const rssArticles = await fetchAllFeeds();
+        articles = rssArticles;
+      } catch (rssError) {
+        console.error('RSS fallback also failed:', rssError.message);
+      }
+    }
+    
+    console.log(`Searching for article with URL: "${url}"`);
+    
+    // Find article by URL
+    const article = articles.find(a => a.link === url || a.link.includes(url) || url.includes(a.link));
+    
+    if (!article) {
+      console.log(`Article with URL ${url} not found`);
+      return res.status(404).json({
+        success: false,
+        error: 'Article not found'
+      });
+    }
+    
+    console.log(`Found article: ${article.title}`);
+    
+    // Return the article data
+    res.json({
+      success: true,
+      data: article
+    });
     
   } catch (error) {
     console.error('Error fetching news article:', error.message);

@@ -158,11 +158,13 @@
         function getArticleId() {
             // First try hash fragment (new method)
             const hash = window.location.hash;
+            console.log('Full URL hash:', hash);
             if (hash && hash.startsWith('#')) {
                 const encodedId = hash.substring(1);
-                // Decode the URL-encoded ID
+                // Decode the URL-encoded ID/URL
                 const id = decodeURIComponent(encodedId);
-                console.log('Found article ID in hash:', id);
+                console.log('Found article ID/URL in hash:', id);
+                console.log('ID/URL type:', typeof id);
                 return id;
             }
             
@@ -412,9 +414,25 @@ Content: ${currentArticle.content}`,
         async function loadArticleFromBackend(articleId) {
             try {
                 console.log('Loading article with ID:', articleId);
+                console.log('Article ID type:', typeof articleId);
                 
-                // First try to get the article directly by ID if it's a valid format
-                // For now, we'll fetch all articles and search through them
+                // First try to fetch the article by URL if the ID looks like a URL
+                if (articleId && (articleId.startsWith('http') || articleId.includes('://'))) {
+                    console.log('Trying to fetch article by URL:', articleId);
+                    const response = await fetch(`https://ai-news-app-backend.vercel.app/news/by-url?url=${encodeURIComponent(articleId)}`, {
+                        headers: getAuthHeaders()
+                    });
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        if (data.success) {
+                            console.log('Found article by URL:', data.data);
+                            return data.data;
+                        }
+                    }
+                }
+                
+                // If URL approach didn't work, try the regular approach
                 const response = await fetch(`https://ai-news-app-backend.vercel.app/news`, {
                     headers: getAuthHeaders()
                 });
@@ -434,27 +452,39 @@ Content: ${currentArticle.content}`,
                 }
                 
                 console.log('All articles loaded:', data.data.length);
+                console.log('First few articles:', data.data.slice(0, 3));
+                
+                // Log all available IDs for debugging
+                const allIds = data.data.map(a => ({id: a.id, type: typeof a.id, url: a.link}));
+                console.log('Available article IDs:', allIds.slice(0, 10));
                 
                 // Try exact match first
-                let article = data.data.find(a => a.id === articleId);
+                let article = data.data.find(a => {
+                    const match = a.id === articleId;
+                    console.log(`Exact match check: "${a.id}" === "${articleId}" = ${match}`);
+                    return match;
+                });
                 
                 // If not found, try matching with string conversion
                 if (!article) {
-                    article = data.data.find(a => String(a.id) === String(articleId));
+                    article = data.data.find(a => {
+                        const match = String(a.id) === String(articleId);
+                        console.log(`String match check: "${String(a.id)}" === "${String(articleId)}" = ${match}`);
+                        return match;
+                    });
                 }
                 
-                // If still not found, try matching with URL as fallback
+                // If still not found, try loose matching
                 if (!article) {
                     article = data.data.find(a => {
-                        const articleUrl = a.link || a.url;
-                        return articleUrl && (articleUrl.includes(articleId) || articleId.includes(articleUrl));
+                        const match = String(a.id).includes(String(articleId)) || String(articleId).includes(String(a.id));
+                        console.log(`Loose match check: "${String(a.id)}" includes "${String(articleId)}" OR vice versa = ${match}`);
+                        return match;
                     });
                 }
                 
                 if (!article) {
-                    // Log all available IDs for debugging
-                    console.log('Available article IDs:', data.data.map(a => a.id));
-                    throw new Error('Article not found');
+                    throw new Error(`Article not found. Searched for ID: "${articleId}"`);
                 }
                 
                 console.log('Found article:', article);

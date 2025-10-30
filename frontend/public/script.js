@@ -130,7 +130,7 @@ const App = {
       this.articles = [];
       data.data.forEach((article, index) => {
         const cleanArticle = {
-          id: String(article.id || article.link || `article_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`),
+          id: article.id, // Use the ID directly from the backend
           title: article.title || 'Untitled',
           source: article.source || 'Unknown',
           author: article.author || 'Unknown',
@@ -145,6 +145,7 @@ const App = {
                 : []),
           content: article.content || ''
         };
+        console.log('Using backend article ID:', cleanArticle.id, 'for article:', cleanArticle.title);
         this.articles.push(cleanArticle);
       });
 
@@ -323,15 +324,25 @@ const App = {
       
       // Only navigate if the click is not on the favorite button or original link
       if (!e.target.closest('.favorite-btn') && !e.target.closest('a.btn')) {
-        console.log('Card clicked, article:', article);
-        if (article.id !== null) {
-          // URL encode the article ID to handle special characters
-          const encodedId = encodeURIComponent(article.id);
-          const navUrl = `news.html#${encodedId}`; // Use hash fragment with article ID
+        console.log('Card clicked');
+        console.log('Article object:', article);
+        console.log('Article ID:', article.id);
+        console.log('Article URL:', article.link);
+        console.log('Article ID type:', typeof article.id);
+        if (article.link !== null) {
+          // Pass the article URL instead of ID for more reliable matching
+          const encodedUrl = encodeURIComponent(article.link);
+          const navUrl = `news.html#${encodedUrl}`; // Use hash fragment with article URL
           console.log('Navigating to:', navUrl);
           window.location.assign(navUrl);
+        } else if (article.id !== null) {
+          // Fallback to ID if URL is not available
+          const encodedId = encodeURIComponent(article.id);
+          const navUrl = `news.html#${encodedId}`; // Use hash fragment with article ID
+          console.log('Navigating to (fallback):', navUrl);
+          window.location.assign(navUrl);
         } else {
-          console.error('DEBUG Frontend: Attempted to navigate, but article ID was missing from card.');
+          console.error('DEBUG Frontend: Attempted to navigate, but article ID and URL were missing from card.');
         }
       }
     });
@@ -399,16 +410,24 @@ const App = {
         }
         
         e.stopPropagation(); // Prevent card click from also firing
-        const articleId = readBtn.getAttribute('data-article-id');
-        console.log('Read article button clicked, article ID:', articleId);
-        if (articleId !== null) {
-          // URL encode the article ID to handle special characters
-          const encodedId = encodeURIComponent(articleId);
-          const navUrl = `news.html#${encodedId}`; // Use hash fragment with article ID
+        console.log('Read article button clicked');
+        console.log('Article object:', article);
+        console.log('Article ID:', article.id);
+        console.log('Article URL:', article.link);
+        if (article.link !== null) {
+          // Pass the article URL instead of ID for more reliable matching
+          const encodedUrl = encodeURIComponent(article.link);
+          const navUrl = `news.html#${encodedUrl}`; // Use hash fragment with article URL
           console.log('Navigating to:', navUrl);
           window.location.assign(navUrl);
+        } else if (article.id !== null) {
+          // Fallback to ID if URL is not available
+          const encodedId = encodeURIComponent(article.id);
+          const navUrl = `news.html#${encodedId}`; // Use hash fragment with article ID
+          console.log('Navigating to (fallback):', navUrl);
+          window.location.assign(navUrl);
         } else {
-          console.error('DEBUG Frontend: Read Article button clicked, but article ID was missing.');
+          console.error('DEBUG Frontend: Read Article button clicked, but article ID and URL were missing.');
         }
       });
     }
@@ -712,23 +731,23 @@ script.js:308 Navigating to: news.html?id=1
   },
   
   /**
-   * Generate a consistent ID for frontend articles based on a URL or other identifier.
-   * This is a simplified hash function for client-side consistency.
-   * @param {string} identifier - The string to hash (e.g., article URL).
-   * @returns {string} A consistent ID.
+   * Generate consistent ID from input string
+   * @param {string} input - Input string to hash
+   * @returns {string} Generated ID
    */
-  generateConsistentId(identifier) {
-    if (!identifier) return `article_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    
-    // A simple, non-cryptographic hash for client-side consistency.
-    // This is a fallback if the backend doesn't provide an ID.
-    let hash = 0;
-    for (let i = 0; i < identifier.length; i++) {
-      const char = identifier.charCodeAt(i);
-      hash = ((hash << 5) - hash) + char;
-      hash |= 0; // Convert to 32bit integer
+  generateId(input) {
+    if (!input || typeof input !== 'string') {
+      return `article_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     }
-    return Math.abs(hash).toString(36);
+    
+    // Simple hash function to generate consistent IDs
+    let hash = 0;
+    for (let i = 0; i < input.length; i++) {
+      const char = input.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash = hash & hash; // Convert to 32bit integer
+    }
+    return 'id_' + Math.abs(hash).toString(16);
   },
 
   /**
