@@ -148,7 +148,7 @@ const App = {
         this.articles.push(cleanArticle);
       });
 
-      console.log(`📰 Loaded ${this.articles.length} articles`);
+      console.log(`📰 Loaded ${this.articles.length} articles`, this.articles);
 
       if (typeof Search !== 'undefined') {
         Search.indexArticles(this.articles);
@@ -323,8 +323,12 @@ const App = {
       
       // Only navigate if the click is not on the favorite button or original link
       if (!e.target.closest('.favorite-btn') && !e.target.closest('a.btn')) {
+        console.log('Card clicked, article:', article);
         if (article.id !== null) {
-          const navUrl = `news.html#${article.id}`; // Use hash fragment with article ID
+          // URL encode the article ID to handle special characters
+          const encodedId = encodeURIComponent(article.id);
+          const navUrl = `news.html#${encodedId}`; // Use hash fragment with article ID
+          console.log('Navigating to:', navUrl);
           window.location.assign(navUrl);
         } else {
           console.error('DEBUG Frontend: Attempted to navigate, but article ID was missing from card.');
@@ -396,8 +400,12 @@ const App = {
         
         e.stopPropagation(); // Prevent card click from also firing
         const articleId = readBtn.getAttribute('data-article-id');
+        console.log('Read article button clicked, article ID:', articleId);
         if (articleId !== null) {
-          const navUrl = `news.html#${articleId}`; // Use hash fragment with article ID
+          // URL encode the article ID to handle special characters
+          const encodedId = encodeURIComponent(articleId);
+          const navUrl = `news.html#${encodedId}`; // Use hash fragment with article ID
+          console.log('Navigating to:', navUrl);
           window.location.assign(navUrl);
         } else {
           console.error('DEBUG Frontend: Read Article button clicked, but article ID was missing.');
