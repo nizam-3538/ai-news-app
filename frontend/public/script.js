@@ -330,24 +330,15 @@ const App = {
         console.log('Article URL:', article.link);
         console.log('Article ID type:', typeof article.id);
         
-        // Check if this is a favorite article and get its index
-        const favoriteIndex = typeof Favorites !== 'undefined' ? Favorites.getFavoriteIndex(article.id) : null;
-        console.log('Favorite index:', favoriteIndex);
-        
-        if (article.link !== null) {
-          // Pass the article URL instead of ID for more reliable matching
-          const encodedUrl = encodeURIComponent(article.link);
-          const navUrl = `news.html#${encodedUrl}`; // Use hash fragment with article URL
-          console.log('Navigating to:', navUrl);
-          window.location.assign(navUrl);
-        } else if (article.id !== null) {
-          // Fallback to ID if URL is not available
+        // Always navigate using the article ID (the backend will handle the lookup)
+        if (article.id !== null) {
+          // URL encode the article ID to handle special characters
           const encodedId = encodeURIComponent(article.id);
           const navUrl = `news.html#${encodedId}`; // Use hash fragment with article ID
-          console.log('Navigating to (fallback):', navUrl);
+          console.log('Navigating to:', navUrl);
           window.location.assign(navUrl);
         } else {
-          console.error('DEBUG Frontend: Attempted to navigate, but article ID and URL were missing from card.');
+          console.error('DEBUG Frontend: Attempted to navigate, but article ID was missing from card.');
         }
       }
     });
@@ -420,24 +411,15 @@ const App = {
         console.log('Article ID:', article.id);
         console.log('Article URL:', article.link);
         
-        // Check if this is a favorite article and get its index
-        const favoriteIndex = typeof Favorites !== 'undefined' ? Favorites.getFavoriteIndex(article.id) : null;
-        console.log('Favorite index:', favoriteIndex);
-        
-        if (article.link !== null) {
-          // Pass the article URL instead of ID for more reliable matching
-          const encodedUrl = encodeURIComponent(article.link);
-          const navUrl = `news.html#${encodedUrl}`; // Use hash fragment with article URL
-          console.log('Navigating to:', navUrl);
-          window.location.assign(navUrl);
-        } else if (article.id !== null) {
-          // Fallback to ID if URL is not available
+        // Always navigate using the article ID (the backend will handle the lookup)
+        if (article.id !== null) {
+          // URL encode the article ID to handle special characters
           const encodedId = encodeURIComponent(article.id);
           const navUrl = `news.html#${encodedId}`; // Use hash fragment with article ID
-          console.log('Navigating to (fallback):', navUrl);
+          console.log('Navigating to:', navUrl);
           window.location.assign(navUrl);
         } else {
-          console.error('DEBUG Frontend: Read Article button clicked, but article ID and URL were missing.');
+          console.error('DEBUG Frontend: Read Article button clicked, but article ID was missing.');
         }
       });
     }

@@ -666,7 +666,7 @@ router.get('/:id', authenticateToken, async (req, res) => {
         data: article
       });
     } else {
-      // Use ID-based lookup
+      // Use ID-based lookup with more flexible matching
       let articles = await fetchAllNews('', 200, 3);
       
       // If no articles from APIs, fallback to RSS feeds
@@ -681,24 +681,49 @@ router.get('/:id', authenticateToken, async (req, res) => {
       }
       
       console.log(`Searching for article with ID: "${id}"`);
-      console.log(`Available article IDs:`, articles.map(a => a.id).slice(0, 10)); // Show first 10 IDs
+      console.log(`Available article IDs (first 10):`, articles.map(a => a.id).slice(0, 10));
       
-      // Try exact match first
-      let article = articles.find(a => a.id === id);
+      // Try multiple matching strategies
+      let article = null;
       
-      // If not found, try loose matching
+      // Strategy 1: Exact match
+      article = articles.find(a => a.id === id);
+      console.log(`Strategy 1 (exact match): ${article ? 'Found' : 'Not found'}`);
+      
+      // Strategy 2: String conversion match
       if (!article) {
+        article = articles.find(a => String(a.id) === String(id));
+        console.log(`Strategy 2 (string match): ${article ? 'Found' : 'Not found'}`);
+      }
+      
+      // Strategy 3: Partial match (ID contains search term or vice versa)
+      if (!article) {
+        article = articles.find(a => String(a.id).includes(String(id)) || String(id).includes(String(a.id)));
+        console.log(`Strategy 3 (partial match): ${article ? 'Found' : 'Not found'}`);
+      }
+      
+      // Strategy 4: If ID looks like a URL, try URL matching
+      if (!article && (id.startsWith('http') || id.includes('://'))) {
         article = articles.find(a => {
-          const match = String(a.id).includes(String(id)) || String(id).includes(String(a.id));
-          if (match) {
-            console.log(`Loose match found: "${a.id}" with "${id}"`);
-          }
+          const match = a.link === id || a.link.includes(id) || id.includes(a.link);
+          if (match) console.log(`Strategy 4 (URL match): Found article with link ${a.link}`);
           return match;
         });
       }
       
+      // Strategy 5: Try to parse as index if it's a number
+      if (!article) {
+        const index = parseInt(id);
+        if (!isNaN(index) && index >= 0 && index < articles.length) {
+          article = articles[index];
+          console.log(`Strategy 5 (index match): Found article at index ${index}`);
+        }
+      }
+      
       if (!article) {
         console.log(`Article with ID ${id} not found after searching ${articles.length} articles`);
+        console.log(`Search ID type: ${typeof id}`);
+        console.log(`Sample article IDs:`, articles.slice(0, 3).map(a => ({id: a.id, type: typeof a.id})));
         return res.status(404).json({
           success: false,
           error: `Article not found. Searched for ID: "${id}" in ${articles.length} articles`
