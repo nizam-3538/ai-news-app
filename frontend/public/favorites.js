@@ -600,9 +600,6 @@ const Favorites = {
     card.className = 'card news-card';
     card.setAttribute('role', 'listitem');
     
-    // Get favorite index for navigation
-    const favoriteIndex = favorite.favoriteIndex !== undefined ? favorite.favoriteIndex : this.getFavoriteIndex(favorite.id);
-    
     // Format date
     const addedDate = new Date(favorite.addedAt).toLocaleDateString('en-US', {
       month: 'short',
@@ -637,7 +634,6 @@ const Favorites = {
           <span>📰 ${this.escapeHtml(favorite.source)}</span>
           <span>📅 ${publishedDate}</span>
           <span>⭐ Added ${addedDate}</span>
-          ${favoriteIndex !== null ? `<span>🔢 Index #${favoriteIndex}</span>` : ''}
         </div>
         
         <p class="card-content">${this.escapeHtml(favorite.summary || 'No summary available.')}</p>
