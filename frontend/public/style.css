@@ -616,3 +616,16 @@ a:hover {
 .news-card .badge.bg-info {
     background-color: var(--info-color) !important;
 }
+
+/* Favorites section specific styles */
+#favoritesSection .card .btn-secondary {
+    color: #ffffff; /* White text color */
+    background-color: #6c757d; /* Darker background for better contrast */
+    border-color: #6c757d;
+}
+
+#favoritesSection .card .btn-secondary:hover {
+    color: #ffffff; /* Keep white text on hover */
+    background-color: #5a6268; /* Slightly darker on hover */
+    border-color: #545b62;
+}
